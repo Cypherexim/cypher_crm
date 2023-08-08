@@ -1,12 +1,13 @@
 const nodemailer = require("nodemailer");
 const fs = require("fs");
+require("dotenv").config();
 
 const transport = nodemailer.createTransport({
-    host: "mail.myeximpanel.com",
-    port: 465,
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
     auth: {
-        user: "no-reply@myeximpanel.com",
-        pass: "Dollar$1234@"
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
