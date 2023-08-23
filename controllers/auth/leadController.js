@@ -150,9 +150,8 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.interServerError(error));}
     },
 
+
     /***************Inserting**********************/
-
-
     insertOpenLead: (req, res, next) => {
         const { username, company, designation, department, remark, address, location, email, contact, gst, pan, iec, userId, leadTracker, followupTracker, lastFollow, nextFollow, assignedFrom } = req.body;
 
@@ -207,6 +206,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
+    
     revertOpenLead:(req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
@@ -358,6 +358,7 @@ exports.lead = {
             });
         } catch (error) {next(ErrorHandler.interServerError(error));}
     },
+
 
     /***************Updating**********************/
     updateSingleLead: (req, res, next) => {
