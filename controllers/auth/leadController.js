@@ -1,12 +1,17 @@
 const db = require("../../config/db");
+const converter = require("number-to-words");
 const { ErrorHandler } = require("../../error/ErrorHandler");
 
 const isNotValue = (val) => ["",null].includes(val);
+const capitalizeFirstLetter = (value) => {
+    const splittedVal = value.split(" ");
+    return splittedVal.map(item => item.charAt(0).toUpperCase() + item.slice(1)).join(" ");
+}
 
 exports.lead = {
     /***************Fetching**********************/
-    //updated
     fetchOpenLeads: (req, res, next) => {
+        console.log(capitalizeFirstLetter(converter.toWords(200000).replace(new RegExp("-", "g"), " ").replace(new RegExp(",", "g"), "") + " only"));
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
         pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, followup_tracker, table2.transaction_time, user_id 
@@ -21,7 +26,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     fetchFollowupLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
@@ -37,7 +42,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     fetchRejectLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
@@ -66,7 +71,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     fetchStatusLead: (req, res, next) => {
         const {userId} = req.query;
         const sql = `select id, lead_data, assigners, status, transaction_time, active, email 
@@ -80,7 +85,7 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.interServerError(error));}
     },
 
-    //updated
+
     fetchDemoLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, demo_time, company_name, name, designation, department, address, contact, email, location, gst_num,
@@ -115,7 +120,7 @@ exports.lead = {
 
     fetchInvoiceLeads: (req, res, next) => {
         const { userId } = req.query;
-        const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
+        const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, 
         pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
         followup_tracker, table2.transaction_time, plan_name from "crm_masterLeads" as table1 full outer join crm_invoiceleads as table2 
         on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
@@ -128,9 +133,26 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.interServerError(error));}
     },
 
+
+    fetchTaxInvoiceLeads: (req, res, next) => {
+        const { userId } = req.query;
+        const sql = `select table2.id, leadid, user_id, plan_name, issued_by, (select name from crm_users where id=table2.issued_by) as issued_name, 
+        company_name, name, designation, department, address, contact, email, location, gst_num, pan_num, source, iec_num, plan_name, invoice_date, 
+        shipping_add, billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", tax_amt, 
+        "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, table2.transaction_time from "crm_masterLeads" as table1 full outer join 
+        crm_taxinvoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                else {res.status(200).json({error: false, result: result.rows});}
+            });
+        } catch (error) {next(ErrorHandler.interServerError(error));}
+    },
+
     /***************Inserting**********************/
 
-    //updated
+
     insertOpenLead: (req, res, next) => {
         const { username, company, designation, department, remark, address, location, email, contact, gst, pan, iec, userId, leadTracker, followupTracker, lastFollow, nextFollow, assignedFrom } = req.body;
 
@@ -157,7 +179,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     insertExcelOpenLeads: async(req, res, next) => {
         const { excelJson } = req.body;
         const excelRecords = JSON.parse(excelJson);
@@ -200,7 +222,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     insertFollowupLead: (req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_followupleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
@@ -216,7 +238,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     insertRejectLead: (req, res, next) => {
         const {leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_rejectleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
@@ -232,7 +254,7 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.interServerError(err.message));}
     },
 
-    //updated
+
     insertDemoLead: (req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, demoTime } = req.body;
         const sql = `insert into crm_demoleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
@@ -250,11 +272,11 @@ exports.lead = {
 
 
     insertInvoiceLead: async(req, res, next) => {
-        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, planName } = req.body;
-        const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
-            followup_tracker, current_stage, transaction_time, active, plan_name) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
-            ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 
-            'demo', NOW(), true, '${planName}')`;
+        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num } = req.body;
+        const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
+            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
+            ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, ${performa_num}, $2, $3, 
+            'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
         const sql2 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
         
         try {
@@ -301,7 +323,7 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.interServerError(error));}
     },
 
-    //updated
+
     insertPriceLead: (req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_priceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
@@ -318,8 +340,26 @@ exports.lead = {
     },
 
 
+    insertTaxInvoiceLead: (req, res, next) => {
+        const {leadId, userId, planName, invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, isEmailSent, attachment, paymentStatus, issuedBy} = req.body;
+        const shippingAddress = `${address[0]?.line1}~${address[0]?.line2}`;
+        const billingAddress = `${address[1]?.line1}~${address[1]?.line2}`;
+        const sql = `insert into crm_taxinvoiceleads (leadid, user_id, plan_name, invoice_date, issued_by, shipping_add,
+            billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", 
+            tax_amt, "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, active, transaction_time, payment_status) values(${leadId}, 
+            ${userId}, '${planName}', '${invoiceDate}', '${issuedBy}', $1, $2, '${taxNum}', ${performaNum}, '${reportName}', '${duration}', 
+            '${hsnSac}', ${qty}, '${unit}', $3, $4, '${taxAmt}', ${gstTax?.cgst}, ${gstTax?.sgst}, ${gstTax?.igst}, '${bankData}', true, 
+            NOW(), '${paymentStatus}')`;
+            
+        try {
+            db.query(sql, [shippingAddress, billingAddress, amount[0], amount[1]], (err, result) => {
+                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                else {res.status(200).json({error: false, msg: "Insert Successful"});}
+            });
+        } catch (error) {next(ErrorHandler.interServerError(error));}
+    },
+
     /***************Updating**********************/
-    //updated
     updateSingleLead: (req, res, next) => {
         const {leadId, username, company, designation, department, source, address, location, email, contact, gst, pan, iec} = req.body;
         const sql = `update "crm_masterLeads" set company_name='${company}', name='${username}', designation='${designation}', department='${department}', 
@@ -336,12 +376,10 @@ exports.lead = {
 
 
     updateStatusLead: (req, res, next) => {
-        const {leadData, assigners, status, leadId} = req.body;
-        const sql = `update crm_statusleads set lead_data=$1, assigners='${assigners}', status='${status}', 
-        transaction_time=now() where id=${leadId}`;
+        const sql = `update crm_statusleads set status='process', transaction_time=NOW() where email='${req.body.email}' and active=true`;
 
         try {
-            db.query(sql, [leadData], (err, result) => {
+            db.query(sql, (err, result) => {
                 if(err) {next(ErrorHandler.interServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Update Successful!"});}
             });
@@ -362,7 +400,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     deleteFollowupLead: (req, res, next) => {
         const {id, leadId, userId} = req.query;
         const sql = `delete from crm_followupleads where id=${id} and leadid=${leadId} and user_id=${userId}`;
@@ -375,7 +413,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     deleteRejectLead: (req, res, next) => {
         const {leadId, userId} = req.query;
         const sql = `delete from crm_rejectleads where id=${leadId} and user_id=${userId}`;
@@ -388,7 +426,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },
 
-    //updated
+
     deleteDemoLead: (req, res, next) => {
         const {leadId, userId} = req.query;
         const sql = `delete from crm_demoleads where id=${leadId} and user_id=${userId}`;
@@ -433,7 +471,7 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.interServerError(error));}
     },
 
-    //updated
+
     deletePriceLead: (req, res, next) => {
         const {leadId, userId} = req.query;
         const sql = `delete from crm_priceleads where id=${leadId} and user_id=${userId}`;
@@ -449,7 +487,20 @@ exports.lead = {
 
     deleteInvoiceLead: (req, res, next) => {
         const {leadId, userId} = req.query;
-        const sql = `delete from crm_invoiceleads where id=${leadId} and user_id=${userId}`;
+        const sql = `delete from crm_invoiceleads where leadid=${leadId} and user_id=${userId}`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                else {res.status(200).json({error: false, msg: "Delete Successful"});}
+            });
+        } catch (error) { next(ErrorHandler.interServerError(error)); }
+    },
+
+
+    deleteTaxInvoiceLead: (req, res, next) => {
+        const {leadId, userId} = req.query;
+        const sql = `delete from crm_taxinvoiceleads where id=${leadId} and user_id=${userId}`;
 
         try {
             db.query(sql, (err, result) => {
@@ -458,6 +509,5 @@ exports.lead = {
             });
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     }
-
 }
 

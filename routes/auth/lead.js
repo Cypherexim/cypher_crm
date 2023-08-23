@@ -52,6 +52,12 @@ router.post("/addInvoiceLead", lead.insertInvoiceLead);
 
 router.get("/getInvoiceLeads", lead.fetchInvoiceLeads);
 
-router.get("/deleteInvoiceLead", lead.deleteInvoiceLead);
+router.delete("/deleteInvoiceLead", lead.deleteInvoiceLead);
+
+router.get("/getTaxInvoiceLeads", lead.fetchTaxInvoiceLeads);
+
+router.post("/addTaxInvoiceLead", lead.insertTaxInvoiceLead);
+
+router.delete("/deleteTaxInvoiceLead", lead.deleteTaxInvoiceLead);
 
 module.exports = router;

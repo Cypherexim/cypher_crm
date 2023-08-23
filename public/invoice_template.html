@@ -27,7 +27,7 @@
       </div>
       
       <div class="hr-line" style="width: 97%;margin: auto; height: 2.5px;border-bottom: 3px solid gray;border-top: 1px solid gray;"></div>
-      <h2 style="width: 100%;text-align: center;letter-spacing: 1px;font-size: 20px;font-weight: 600;font-family: sans-serif;color: #403d3d;">PROFORMA INVOICE</h2>
+      <h2 style="width: 100%;text-align: center;letter-spacing: 1px;font-size: 20px;font-weight: 600;font-family: sans-serif;color: #403d3d;">{{invoiceTitle}}</h2>
       
       <div class="gstin" style="margin: auto; margin-bottom: 10px;width: 97%;">
         <table style="width: 100%;">
@@ -37,9 +37,9 @@
                 </td>
                 <td>
                     <div class="plno" style="font-size: 12px;letter-spacing: 0.5px;width: fit-content;float: right;">
-                        <div><span style="font-weight: bold;margin-right:5px;">PI No.:</span>11488</div>
-                        <div><span style="font-weight: bold;margin-right:5px;">Date:</span>10-Feb-2023</div>
-                        <div><span style="font-weight: bold;margin-right:5px;">Valid till:</span>10-Feb-2023</div>
+                        <div><span style="font-weight: bold;margin-right:5px;">PI No.:</span>{{orderNum}}</div>
+                        <div><span style="font-weight: bold;margin-right:5px;">Date:</span>{{invoiceNum}}</div>
+                        <div><span style="font-weight: bold;margin-right:5px;">Valid till:</span>{{invoiceNum}}</div>
                     </div>
                 </td>
             </tr>
@@ -48,31 +48,31 @@
       
       <table style="margin: auto; margin-bottom: 10px;width: 97%;border: 1px solid;border-collapse: collapse;">
           <thead>
-              <th style="text-align:left;border: 1px solid;padding: 3px;font-size: 12px;">Billing Address</th>
-              <th style="text-align:left;border: 1px solid;padding: 3px;font-size: 12px;">Shipping Address</th>
+              <th style="width:50%;text-align:left;border: 1px solid;padding: 3px;font-size: 12px;">Billing Address</th>
+              <th style="width:50%;text-align:left;border: 1px solid;padding: 3px;font-size: 12px;">Shipping Address</th>
           </thead>
           <tbody>
               <tr>
-                  <td style="border: 1px solid;padding: 3px;font-size: 12px;">
-                      <div class="td-box">
-                          <div>Mr. Kamal Middha</div>
-                          <div>Rocktek infra Service pvt. ltd</div>
-                          <div>302/23, Gaurav Tower, Pvr Sonia Complex, Vikas Puri, New Delhi-110018</div>
-                          <div>NEW DELHI, Delhi-110018</div>
-                          <div>GSTIN: 07AADCR2313K1ZJ</div>
-                          <div>Phone: 9711202504</div>
-                      </div>
-                  </td>
-                  <td style="border: 1px solid;padding: 3px;font-size: 12px;">
-                      <div class="td-box">
-                          <div>Mr. Kamal Middha</div>
-                          <div>Rocktek infra Service pvt. ltd</div>
-                          <div>302/23, Gaurav Tower, Pvr Sonia Complex, Vikas Puri, New Delhi-110018</div>
-                          <div>NEW DELHI, Delhi-110018</div>
-                          <div>GSTIN: 07AADCR2313K1ZJ</div>
-                          <div>Phone: 9711202504</div>
-                      </div>
-                  </td>
+                <td style="border: 1px solid;padding: 3px;font-size: 12px;">
+                    <div class="td-box">
+                        <div>{{userName}}</div>
+                        <div>{{companyName}}</div>
+                        <div>{{shippingAddLine1}}</div>
+                        <div>{{shippingAddLine2}}</div>
+                        <div>GSTIN:&nbsp;&nbsp;{{clientGstNum}}</div>
+                        <div>Phone:&nbsp;&nbsp;{{phoneNum}}</div>
+                    </div>
+                </td>
+                <td style="border: 1px solid;padding: 3px;font-size: 12px;">
+                    <div class="td-box">
+                        <div>{{userName}}</div>
+                        <div>{{companyName}}</div>
+                        <div>{{billingAddLine1}}</div>
+                        <div>{{billingAddLine2}}</div>
+                        <div>GSTIN:&nbsp;&nbsp;{{clientGstNum}}</div>
+                        <div>Phone:&nbsp;&nbsp;{{phoneNum}}</div>
+                    </div>
+                </td>
               </tr>
           </tbody>
       </table>
@@ -95,18 +95,18 @@
                   <td style="border: 1px solid;font-size: 12px;padding: 3px;">1</td>
                   <td style="border: 1px solid;font-size: 12px;padding: 3px;">
                       <div>
-                          <div style="font-weight:600;">MARKET ANALYSIS REPORT OF 6 MONTHS</div>
-                          <div>DURATIONS - 6 Months (Feb-23 to 15th Aug-23)</div>
+                          <div style="font-weight:600;">{{reportType}}</div>
+                          <div>DURATIONS - {{duration}}</div>
                       </div>
                   </td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">998371</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">1</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">no.s</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">15,000</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">15,000</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">9.00%</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">9.00%</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">17,700.00</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{hsnSac}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{quantity}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{unit}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{amtBeforeTax}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{taxAmt}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{cgst}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{sgst}}</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{amtAfterTax}}</td>
               </tr>
           </tbody>
       </table>
@@ -117,31 +117,31 @@
                   <td style="border-right: 1px solid;font-size: 12px;padding: 3px;">Bank Details:</td>
                   <td style="font-size: 12px;padding: 3px;">Total Proforma Invoice Amount in Words:</td>
                   <td style="border: 1px solid;font-size: 12px;padding: 3px;">Total Amount before Tax (₹)</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">15,000.00</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{amtBeforeTax}}</td>
               </tr>
               <tr>
                   <td rowspan="3" style="border-right: 1px solid;font-size: 12px;padding: 3px;">
                       <div>
-                          <div style="margin-bottom: 2px;">Bank Name:&nbsp;ICICI BANK LIMITED</div>
-                          <div style="margin-bottom: 2px;">Branch:&nbsp;PARLIAMENT STREET, NEW DELHI-01</div>
-                          <div style="margin-bottom: 2px;">Account No.:&nbsp;663705600902</div>
-                          <div>IFSC:&nbsp;ICIC0006637</div>
+                          <div style="margin-bottom: 2px;">Bank Name:&nbsp;{{bankName}}</div>
+                          <div style="margin-bottom: 2px;">Branch:&nbsp;{{bankBranch}}</div>
+                          <div style="margin-bottom: 2px;">Account No.:&nbsp;{{bankAccount}}</div>
+                          <div>IFSC:&nbsp;{{bankIfsc}}</div>
                       </div>
                   </td>
                   <td style="font-size: 12px;padding: 3px;">
-                      <span style="font-weight: 600;">Rupees Seventeen Thousand Seven Hundred only</span>
+                      <span style="font-weight: 600;">{{amtInWords}}</span>
                   </td>
                   <td style="border: 1px solid;font-size: 12px;padding: 3px;">Add CGST (₹)</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">1,350.00</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{cgstAmt}}</td>
               </tr>
               <tr>
                   <td rowspan="2"></td>
                   <td style="border: 1px solid;font-size: 12px;padding: 3px;">Add SGST (₹)</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">1,350.0</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{sgstAmt}}</td>
               </tr>
               <tr>
                   <td style="border: 1px solid;font-size: 12px;padding: 3px;font-weight: 600;">Grand Total (₹)</td>
-                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">17,700.00</td>
+                  <td style="border: 1px solid;font-size: 12px;padding: 3px;">{{amtAfterTax}}</td>
               </tr>
           </tbody>
       </table>
@@ -195,16 +195,16 @@
               </thead>
               <tbody>
                   <tr>
-                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">998371</td>
-                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">15,000</td>
-                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">9.00%</td>
-                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">1,350</td>
-                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">9.00%</td>
-                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">1,350</td>
+                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">{{hsnSac}}</td>
+                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">{{taxAmt}}</td>
+                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">{{cgst}}</td>
+                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">{{cgstAmt}}</td>
+                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">{{sgst}}</td>
+                      <td style="border: 1px solid;text-align: left;padding: 3px;font-size: 12px;">{{sgstAmt}}</td>
                   </tr>
               </tbody>
           </table>
       </div>
-      </div>
+    </div>
   </body>
 </html>
