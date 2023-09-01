@@ -60,4 +60,8 @@ router.post("/addTaxInvoiceLead", lead.insertTaxInvoiceLead);
 
 router.delete("/deleteTaxInvoiceLead", lead.deleteTaxInvoiceLead);
 
+router.post("/updatePartialFollowupLead", lead.updateFollowUpLead);
+
+router.post("/updatePartialAllLead", lead.updateLeadRemark);
+
 module.exports = router;
