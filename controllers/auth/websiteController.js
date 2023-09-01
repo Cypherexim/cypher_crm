@@ -48,5 +48,19 @@ exports.website = {
                 }
             });
         } catch (error) {next(ErrorHandler.interServerError(error));}
+    },
+
+    countriesData: (req, res, next) => {
+        const continentName = req.query.continent;
+        const sql = `select * from "website_ImpExp_Countries" where continent_name='${continentName}' and active=true;`
+
+        try {
+            db.query(sql,(err, result) => {
+                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                else {
+                    res.status(200).json({ error: false, result: result.rows });
+                }
+            });
+        } catch (error) {next(ErrorHandler.interServerError(error));}
     }
 }
