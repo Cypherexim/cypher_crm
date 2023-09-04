@@ -62,6 +62,8 @@ router.delete("/deleteTaxInvoiceLead", lead.deleteTaxInvoiceLead);
 
 router.post("/updatePartialFollowupLead", lead.updateFollowUpLead);
 
+router.post("/updatePartialOpenLead", lead.updateOpenLead);
+
 router.post("/updatePartialAllLead", lead.updateLeadRemark);
 
 module.exports = router;

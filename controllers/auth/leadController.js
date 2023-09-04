@@ -412,7 +412,18 @@ exports.lead = {
     },
 
 
-    updateInvoiceLead: (req, res, next) => {},
+    updateOpenLead: (req, res, next) => {
+        const {id, remark, nextFollow, lastFollow, followupTracker} = req.body;
+        const sql = `update crm_openleads set remarks=$1, next_followup='${nextFollow}', last_followup='${lastFollow}',
+        followup_tracker=$2 where id=${id} and active=true`;
+
+        try {
+            db.query(sql, [remark, followupTracker], (err, result) => {
+                if(err) {next(ErrorHandler.interServerError(err.message));}
+                else {res.status(200).json({error: false, msg: "Update Successful!"});}
+            });
+       } catch (error) { next(ErrorHandler.interServerError(error)); }
+    },
 
 
     /***************delete**********************/
