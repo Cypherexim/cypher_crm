@@ -442,7 +442,9 @@ exports.lead = {
 
     deleteFollowupLead: (req, res, next) => {
         const {id, leadId, userId} = req.query;
-        const sql = `delete from crm_followupleads where id=${id} and leadid=${leadId} and user_id=${userId}`;
+        const sql = id 
+        ? `delete from crm_followupleads where id=${id} and leadid=${leadId} and user_id=${userId}`
+        : `delete from crm_followupleads where id=${leadId} and user_id=${userId}`;
     
         try {
             db.query(sql, (err, result) => {
