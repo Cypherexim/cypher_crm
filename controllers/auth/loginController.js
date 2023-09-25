@@ -1,4 +1,5 @@
 const db = require("../../config/db");
+const {getMinutes, setTimeInFormat} = require("../../utils/timeConvertor");
 const {ErrorHandler} = require("../../error/ErrorHandler");
 
 exports.login = {
@@ -29,6 +30,66 @@ exports.login = {
                     } else { next(ErrorHandler.authenticationError("Username is invalid!")); }
                 }
             });           
+        } catch (error) { next(ErrorHandler.interServerError(error)); }
+    },
+
+    loginLog: (req, res, next) => {
+        const {id, date} = req.body;
+        const currentTime = new Date();
+        const sql1 = `select id, login_time, logout_time, total_minutes, log_history from "crm_loginLog" 
+        where user_id=${id} and transaction_date=${date}`;
+        const sql2 = `update "crm_loginLog" set login_time=now(), log_history=$1 where user_id=${id}`;
+        const sql3 = `insert into "crm_loginLog" (user_id, login_time, transaction_date, total_minutes, log_history) 
+        values(${id}, now(), '${date}', 0, $1)`;
+
+        try {
+            db.query(sql1, (err, result) => {
+                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                else {
+                    if(result.rows.length>0) {
+                        const logHistory = JSON.parse(result.rows[0]["log_history"]);
+                        logHistory.push({
+                            status: "login",
+                            time: setTimeInFormat(currentTime)
+                        });
+                        db.query(sql2, [JSON.stringify(logHistory)], (err2, result2) => {
+                            if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                            else {res.json({error: false, msg: "Updated Successfully"});}
+                        });
+                    } else {
+                        const logHistory = [{ status: "login", time: setTimeInFormat(currentTime) }];
+                        
+                        db.query(sql3, [JSON.stringify(logHistory)], (err3, result3) => {
+                            if(err3) { next(ErrorHandler.interServerError(err3.message)); }
+                            else {res.json({error: false, msg: "Inserted Successfully"});}
+                        });
+                    }
+                }
+            });
+        } catch (error) { next(ErrorHandler.interServerError(error)); }
+    },
+
+    userlogout: (req, res, next) => {
+        const {id, date} = req.body;
+        const sql1 = `select login_time, total_minutes, log_history from "crm_loginLog" where user_id=${id} and transaction_date=${date}`;
+        const sql2 = `update "crm_loginLog" set total_minutes=$1, log_history=$2 where user_id=${id} and transaction_date=${date}`;
+
+        try {
+            db.query(sql1, async(err, result) => {
+                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                else {
+                    const {total_minutes, log_history, login_time} = result.rows[0];
+                    const logHistory = JSON.parse(log_history);
+                    logHistory.push({ status: "logout", time: setTimeInFormat(currentTime) });
+                    const loginTime = new Date(login_time);
+                    const totalMinutes = total_minutes + (await getMinutes(loginTime));
+                    
+                    db.query(sql2, [totalMinutes, JSON.stringify(logHistory)], (err2, result2) => {
+                        if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                        else {res.json({error: false, msg: "Logout Successfully"});}
+                    });
+                }
+            });
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     }
 }; 

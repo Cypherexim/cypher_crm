@@ -14,8 +14,8 @@ exports.lead = {
         console.log(capitalizeFirstLetter(converter.toWords(200000).replace(new RegExp("-", "g"), " ").replace(new RegExp(",", "g"), "") + " only"));
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, remarks, company_name, name, designation, department, address, contact, email, location, gst_num,
-        pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, followup_tracker, table2.transaction_time, user_id 
-        from "crm_masterLeads" as table1 full outer join crm_openleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} 
+        pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, current_stage, followup_tracker, table1.transaction_time, user_id, 
+        source_detail from "crm_masterLeads" as table1 full outer join crm_openleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} 
         and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -30,8 +30,8 @@ exports.lead = {
     fetchFollowupLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
-        pan_num, remarks, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, followup_tracker, table2.transaction_time 
-        from "crm_masterLeads" as table1 full outer join crm_followupleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} 
+        pan_num, remarks, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, followup_tracker, table1.transaction_time, 
+        source_detail from "crm_masterLeads" as table1 full outer join crm_followupleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} 
         and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -46,8 +46,8 @@ exports.lead = {
     fetchRejectLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
-        pan_num, remarks, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, followup_tracker, table2.transaction_time 
-        from "crm_masterLeads" as table1 full outer join crm_rejectleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} 
+        pan_num, remarks, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, followup_tracker, table1.transaction_time, 
+        source_detail from "crm_masterLeads" as table1 full outer join crm_rejectleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} 
         and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -89,8 +89,8 @@ exports.lead = {
     fetchDemoLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, demo_time, company_name, name, designation, department, address, contact, email, location, gst_num,
-        pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
-		followup_tracker, table2.transaction_time from "crm_masterLeads" as table1 full outer join crm_demoleads as table2 on table1.id=table2.leadid 
+        pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, assigned_from as assigend_from_id, 
+        lead_tracker, followup_tracker, table1.transaction_time, source_detail from "crm_masterLeads" as table1 full outer join crm_demoleads as table2 on table1.id=table2.leadid 
 		where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -106,7 +106,7 @@ exports.lead = {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
         pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
-        followup_tracker, table2.transaction_time from "crm_masterLeads" as table1 full outer join crm_priceleads as table2 on table1.id=table2.leadid 
+        followup_tracker, table1.transaction_time, source_detail from "crm_masterLeads" as table1 full outer join crm_priceleads as table2 on table1.id=table2.leadid 
         where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -122,7 +122,7 @@ exports.lead = {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, 
         pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
-        followup_tracker, table2.transaction_time, plan_name from "crm_masterLeads" as table1 full outer join crm_invoiceleads as table2 
+        followup_tracker, table1.transaction_time, plan_name, source_detail from "crm_masterLeads" as table1 full outer join crm_invoiceleads as table2 
         on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
         
         try {
@@ -139,7 +139,7 @@ exports.lead = {
         const sql = `select table2.id, leadid, user_id, plan_name, issued_by, (select name from crm_users where id=table2.issued_by) as issued_name, 
         company_name, name, designation, department, address, contact, email, location, gst_num, pan_num, source, iec_num, plan_name, invoice_date, 
         shipping_add, billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", tax_amt, 
-        "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, table2.transaction_time from "crm_masterLeads" as table1 full outer join 
+        "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, table1.transaction_time from "crm_masterLeads" as table1 full outer join 
         crm_taxinvoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -153,22 +153,23 @@ exports.lead = {
 
     /***************Inserting**********************/
     insertOpenLead: (req, res, next) => {
-        const { username, company, designation, department, remark, address, location, email, contact, gst, pan, iec, userId, leadTracker, followupTracker, lastFollow, nextFollow, assignedFrom } = req.body;
+        const { username, company, designation, department, remark, address, location, email, contact, gst, pan, iec, userId, leadTracker, followupTracker, lastFollow, nextFollow, assignedFrom, source, reference } = req.body;
 
         const sql1 = `insert into "crm_masterLeads" (company_name, name, designation, department, address,
-            contact, email, location, gst_num, pan_num, iec_num, source, transaction_time, active) 
+            contact, email, location, gst_num, pan_num, iec_num, source, transaction_time, source_detail, active) 
             values ('${company}', '${username}', '${designation}', '${department}', '${address}', '${contact}', 
-            '${email}', '${location}', '${gst}', '${pan}', '${iec}', $1, NOW(), true) returning id`;
+            '${email}', '${location}', '${gst}', '${pan}', '${iec}', '${source}', NOW(), $1, true) returning id`;
         const sql2 = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
-            followup_tracker, current_stage, transaction_time, active) values($1, '', '${lastFollow}', '${nextFollow}', 
-            ${isNotValue(assignedFrom)?'NULL':`'${assignedFrom}'`}, ${userId}, $2, $3, 'open', NOW(), true)`;
+            followup_tracker, current_stage, transaction_time, active) values($1, $2, '${lastFollow}', '${nextFollow}', 
+            ${isNotValue(assignedFrom)?'NULL':`'${assignedFrom}'`}, ${userId}, $3, $4, 'open', NOW(), true)`;
 
         try {
-            db.query(sql1, [remark], (err, result) => {
+            const sourceDetail = source=="reference" ? JSON.stringify(reference) : "";
+            db.query(sql1, [sourceDetail], (err, result) => {
                 if(err) {next(ErrorHandler.interServerError(err.message));}
                 else {
                     const insertedId = result.rows[0]["id"];
-                    db.query(sql2, [insertedId, leadTracker, followupTracker], (err2, result2) => {
+                    db.query(sql2, [insertedId, remark, leadTracker, followupTracker], (err2, result2) => {
                         if(err2) {next(ErrorHandler.interServerError(err2.message));}
                         else {res.status(200).json({ error: false, msg: "Inserted Successful" });}
                     });
@@ -184,7 +185,7 @@ exports.lead = {
 
         try {
             for(let i=0; i<excelRecords.length; i++) {
-                const { username, company, designation, department, remark, address, location, email, contact, gst, pan, iec, userId } = excelRecords[i];
+                const { username, company, designation, department, source, address, location, email, contact, gst, pan, iec, userId } = excelRecords[i];
                 const sql = `insert into "crm_masterLeads" (company_name, name, designation, department, address,
                     contact, email, location, gst_num, pan_num, iec_num, source, transaction_time, active) 
                     values ('${company}', '${username}', '${designation}', '${department}', $1, '${contact}', 
@@ -192,7 +193,7 @@ exports.lead = {
                 const sql2 = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
                     followup_tracker, current_stage, transaction_time, active) values($1, '', NULL, NULL, NULL, ${userId}, '', '', 'open', NOW(), true)`;                 
 
-                const result = await db.query(sql, [address, remark]); //masterLead insertion
+                const result = await db.query(sql, [address, source]); //masterLead insertion
                 const insertedId = result.rows[0]["id"];
                 await db.query(sql2, [insertedId]);//openlead insertion
                 console.log("Inserted!");
@@ -360,15 +361,21 @@ exports.lead = {
 
     /***************Updating**********************/
     updateSingleLead: (req, res, next) => {
-        const {leadId, username, company, designation, department, source, address, location, email, contact, gst, pan, iec} = req.body;
-        const sql = `update "crm_masterLeads" set company_name='${company}', name='${username}', designation='${designation}', department='${department}', 
-        address='${address}', contact='${contact}', email='${email}', location='${location}', gst_num='${gst}', pan_num='${pan}', iec_num='${iec}', source=$1, 
-        transaction_time=NOW() where id=${leadId} and active=true`;
+        const {id, leadId, username, company, designation, department, remark, source, address, location, email, contact, gst, pan, iec, reference} = req.body;
+        const sql1 = `update "crm_masterLeads" set company_name='${company}', name='${username}', designation='${designation}', department='${department}', 
+        address='${address}', contact='${contact}', email='${email}', location='${location}', gst_num='${gst}', pan_num='${pan}', iec_num='${iec}', source='${source}', 
+        source_detail=$1 where id=${leadId} and active=true`;
+        const sql2 = `update "crm_openleads" set remarks=$1 where id=${id} and active=true`;
 
         try {
-            db.query(sql, [source], (err, result) => {
+            db.query(sql1, [JSON.stringify(reference)], (err, result) => {
                 if(err) { next(ErrorHandler.interServerError(err.message)); }
-                else { res.status(200).json({error: false, msg: "Update Successfull"}); }
+                else { 
+                    db.query(sql2, [remark], (err2, result2) => {
+                        if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                        else { res.status(200).json({error: false, msg: "Update Successfull"}); }
+                    });
+                }
             });
         } catch (error) { next(ErrorHandler.interServerError(error)); }
     },

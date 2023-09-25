@@ -9,3 +9,22 @@ exports.tConvert = (time) => {
     }
     return time.join(''); // return adjusted time or original string
 }
+
+exports.getMinutes = (startTime) => {
+    return new Promise((resolve, reject) => {
+        const startTimeInMs = setTimeInFormat(startTime).getTime();
+        const endTimeInMs = setTimeInFormat(new Date()).getTime();
+    
+        resolve((endTimeInMs - startTimeInMs) / 60000);
+    });
+}
+
+
+exports.setTimeInFormat = (time) => {
+    const isLessThanTen = (num) => num>=10 ? num : `0${num}`;
+
+    const date = `${isLessThanTen(time.getMonth()+1)}/${isLessThanTen(time.getDate())}/${time.getFullYear()}`;
+    const timing = `${isLessThanTen(time.getHours())}:${isLessThanTen(time.getMinutes())}:00`;
+    return `${date} ${timing}`;
+}
+
