@@ -13,10 +13,10 @@ exports.user = {
         
         try {
             db.query(sql, (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
     sendInvoiceEmail: async(req, res, next) => {
@@ -40,17 +40,17 @@ exports.user = {
         const mailResponse = await sendEmailWithInvoice(mailBody, fileName);
 
         if(mailResponse==true) res.status(200).json({error: false, msg: "Invoice has been sent!"});
-        else next(ErrorHandler.interServerError(mailResponse));
+        else next(ErrorHandler.internalServerError(mailResponse));
     },
 
     fetchInvoiceNumber: (req, res, next) => {
         const sql = "select * from crm_tracker";
         try {
             db.query(sql, (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
     updateInvoiceNumber: (req, res, next) => {
@@ -58,18 +58,18 @@ exports.user = {
         const sql = "select * from crm_tracker";
         try {
             db.query(sql, (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {
                     const currentNum = result.rows[0][column];
                     const sql2 = `update crm_tracker set ${column}=${currentNum+1}`;
 
                     db.query(sql2, (err2, result2) => {
-                        if(err2) {next(ErrorHandler.interServerError(err2.message));}
+                        if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                         else res.status(200).json({error: false, result: result.rows});
                     });
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     }
 };
 

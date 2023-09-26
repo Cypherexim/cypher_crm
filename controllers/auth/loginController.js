@@ -13,15 +13,15 @@ exports.login = {
 
         try {
             db.query(query, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     if(result.rows.length>0) {
                         db.query(query2, (err2, result2) => {
-                            if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                            if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
                             else {
                                 if(result2.rows.length>0) {
                                     db.query(query3, (err3, result3) => {
-                                        if(err3) { next(ErrorHandler.interServerError(err3.message)); }
+                                        if(err3) { next(ErrorHandler.internalServerError(err3.message)); }
                                         else res.json({error: false, result: result2.rows});                                        
                                     });
                                 } else next(ErrorHandler.authenticationError("Password is incorrect!"));
@@ -30,7 +30,7 @@ exports.login = {
                     } else { next(ErrorHandler.authenticationError("Username is invalid!")); }
                 }
             });           
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
     loginLog: (req, res, next) => {
@@ -44,7 +44,7 @@ exports.login = {
 
         try {
             db.query(sql1, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     if(result.rows.length>0) {
                         const logHistory = JSON.parse(result.rows[0]["log_history"]);
@@ -53,20 +53,20 @@ exports.login = {
                             time: setTimeInFormat(currentTime)
                         });
                         db.query(sql2, [JSON.stringify(logHistory)], (err2, result2) => {
-                            if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                            if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
                             else {res.json({error: false, msg: "Updated Successfully"});}
                         });
                     } else {
                         const logHistory = [{ status: "login", time: setTimeInFormat(currentTime) }];
                         
                         db.query(sql3, [JSON.stringify(logHistory)], (err3, result3) => {
-                            if(err3) { next(ErrorHandler.interServerError(err3.message)); }
+                            if(err3) { next(ErrorHandler.internalServerError(err3.message)); }
                             else {res.json({error: false, msg: "Inserted Successfully"});}
                         });
                     }
                 }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
     userlogout: (req, res, next) => {
@@ -76,7 +76,7 @@ exports.login = {
 
         try {
             db.query(sql1, async(err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     const {total_minutes, log_history, login_time} = result.rows[0];
                     const logHistory = JSON.parse(log_history);
@@ -85,11 +85,11 @@ exports.login = {
                     const totalMinutes = total_minutes + (await getMinutes(loginTime));
                     
                     db.query(sql2, [totalMinutes, JSON.stringify(logHistory)], (err2, result2) => {
-                        if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                        if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
                         else {res.json({error: false, msg: "Logout Successfully"});}
                     });
                 }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
 }; 

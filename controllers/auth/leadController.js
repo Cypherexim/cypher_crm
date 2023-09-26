@@ -11,7 +11,7 @@ const capitalizeFirstLetter = (value) => {
 exports.lead = {
     /***************Fetching**********************/
     fetchOpenLeads: (req, res, next) => {
-        console.log(capitalizeFirstLetter(converter.toWords(200000).replace(new RegExp("-", "g"), " ").replace(new RegExp(",", "g"), "") + " only"));
+        // console.log(capitalizeFirstLetter(converter.toWords(200000).replace(new RegExp("-", "g"), " ").replace(new RegExp(",", "g"), "") + " only"));
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, remarks, company_name, name, designation, department, address, contact, email, location, gst_num,
         pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, current_stage, followup_tracker, table1.transaction_time, user_id, 
@@ -20,10 +20,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if (err) { next(ErrorHandler.interServerError(err.message)); }
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { res.status(200).json({ error: false, result: result.rows }); }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -36,10 +36,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if (err) { next(ErrorHandler.interServerError(err.message)); }
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { res.status(200).json({ error: false, result: result.rows }); }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -52,10 +52,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if (err) { next(ErrorHandler.interServerError(err.message)); }
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { res.status(200).json({ error: false, result: result.rows }); }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
     
@@ -65,10 +65,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if (err) { next(ErrorHandler.interServerError(err.message)); }
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { res.status(200).json({ error: false, result: result.rows }); }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -79,10 +79,10 @@ exports.lead = {
         
         try {
             db.query(sql, (err, result) => {
-                if(err)  {next(ErrorHandler.interServerError(err.message));}
+                if(err)  {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -95,10 +95,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -111,10 +111,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -127,10 +127,10 @@ exports.lead = {
         
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -144,10 +144,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, result: result.rows});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -166,16 +166,16 @@ exports.lead = {
         try {
             const sourceDetail = source=="reference" ? JSON.stringify(reference) : "";
             db.query(sql1, [sourceDetail], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {
                     const insertedId = result.rows[0]["id"];
                     db.query(sql2, [insertedId, remark, leadTracker, followupTracker], (err2, result2) => {
-                        if(err2) {next(ErrorHandler.interServerError(err2.message));}
+                        if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                         else {res.status(200).json({ error: false, msg: "Inserted Successful" });}
                     });
                 }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -203,7 +203,7 @@ exports.lead = {
                 }
             }
 
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
     
@@ -216,10 +216,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Insert Successfull"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -231,10 +231,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Insert Successfull"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -247,10 +247,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Insert Successfull"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(err.message));}
+        } catch (error) {next(ErrorHandler.internalServerError(err.message));}
     },
 
 
@@ -263,28 +263,28 @@ exports.lead = {
     
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
     insertInvoiceLead: async(req, res, next) => {
-        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num } = req.body;
+        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num, email } = req.body;
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
-            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
+            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price, email) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
             ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, ${performa_num}, $2, $3, 
-            'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
+            'demo', NOW(), true, '${plan_name}', '${plan_price}', '${email}')`;
         const sql2 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
         
         try {
             await db.query(sql2);
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });            
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -299,7 +299,7 @@ exports.lead = {
 
         try {
             db.query(sql1, (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {
                     if(result.rows.length>0) {
                         const assignerArr = (result.rows[0]["assigners"]);
@@ -307,19 +307,19 @@ exports.lead = {
                         if(!assignerArr.includes(assigner)) assignerArr.push(assigner);
 
                         db.query(sql3, [leadData, assignerArr, email], (err2, result2) => {
-                            if(err2) {next(ErrorHandler.interServerError(err2.message));}
+                            if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                             else {res.status(200).json({error: false, msg: "Update Successful"});}
                         });
                     } else {
                         const assignerArr = [ assigner ];
                         db.query(sql2, [leadData, assignerArr, email], (err2, result2) => {
-                            if(err2) {next(ErrorHandler.interServerError(err2.message));}
+                            if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                             else {res.status(200).json({error: false, msg: "Insert Successful"});}
                         });
                     }
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -332,10 +332,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -352,10 +352,10 @@ exports.lead = {
             
         try {
             db.query(sql, [shippingAddress, billingAddress, amount[0], amount[1]], (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -369,15 +369,15 @@ exports.lead = {
 
         try {
             db.query(sql1, [JSON.stringify(reference)], (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { 
                     db.query(sql2, [remark], (err2, result2) => {
-                        if(err2) { next(ErrorHandler.interServerError(err2.message)); }
+                        if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
                         else { res.status(200).json({error: false, msg: "Update Successfull"}); }
                     });
                 }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -386,10 +386,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Update Successful!"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -399,10 +399,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Update Successful!"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -412,10 +412,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Update Successful!"});}
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -426,10 +426,10 @@ exports.lead = {
 
         try {
             db.query(sql, [remark, followupTracker], (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Update Successful!"});}
             });
-       } catch (error) { next(ErrorHandler.interServerError(error)); }
+       } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -440,10 +440,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Delete Successful"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -455,10 +455,10 @@ exports.lead = {
     
         try {
             db.query(sql, (err, result) => {
-                if (err) { next(ErrorHandler.interServerError(err.message)); }
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { res.status(200).json({ error: false, msg: "Delete Successful" }); }
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -468,10 +468,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Delete Successful"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -481,10 +481,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Delete Successful"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -495,7 +495,7 @@ exports.lead = {
 
         try {
             db.query(sql1, (err, result) => {
-                if(err) {next(ErrorHandler.interServerError(err.message));}
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {
                     const {assigners} = result.rows[0];
                     const assignersArr = assigners.split(",");
@@ -505,18 +505,18 @@ exports.lead = {
                         const sql3 = `update crm_statusleads set assigners='${assignersArr.toString()}' where id=${leadId}`;
 
                         db.query(sql3, (err2, result2) => {
-                            if(err2) {next(ErrorHandler.interServerError(err2.message));}
+                            if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                             else {res.status(200).json({error: false, msg: "Delete Successful!"});}
                         });
                     } else if(assignersArr.length==1) {
                         db.query(sql2, (err3, result3) => {
-                            if(err3) {next(ErrorHandler.interServerError(err3.message));}
+                            if(err3) {next(ErrorHandler.internalServerError(err3.message));}
                             else {res.status(200).json({error: false, msg: "Delete Successful!"});}
                         });
                     }
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
 
@@ -526,10 +526,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Delete Successful"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -539,10 +539,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Delete Successful"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
 
@@ -552,10 +552,10 @@ exports.lead = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Delete Successful"});}
             });
-        } catch (error) { next(ErrorHandler.interServerError(error)); }
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
 }
 

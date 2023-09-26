@@ -4,7 +4,7 @@ class ErrorHandler {
         this.msg = msg;
     }
     
-    static interServerError(msg = "Internal Server Error!") {
+    static internalServerError(msg = "Internal Server Error!") {
         console.log('errorhandler.js ==>',msg)
         return new ErrorHandler(500, msg);
     }

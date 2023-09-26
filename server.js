@@ -5,7 +5,7 @@ const app = express();
 const path = require("path");
 const PORT = process.env.PORT || process.env.SERVER_PORT;
 
-const {userRoute, leadRoute, siteRoute} = require("./routes/index");
+const {userRoute, leadRoute, siteRoute, generalRoute} = require("./routes/index");
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
@@ -20,6 +20,7 @@ app.use(express.static(__dirname+'/public'));
 
 app.get("/", (req, res) => res.send("<h2>Welcome to Cypher CRM</h2>"));
 
+app.use("/api", generalRoute);
 app.use("/api/user", userRoute);
 app.use("/api/lead", leadRoute);
 

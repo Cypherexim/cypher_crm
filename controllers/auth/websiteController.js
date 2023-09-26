@@ -10,12 +10,12 @@ exports.website = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     res.status(200).json({ error: false, msg: "Inserted Successful" });
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
     checkoutPackage: (req, res, next) => {
@@ -26,12 +26,12 @@ exports.website = {
 
         try {
             db.query(sql, (err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     res.status(200).json({ error: false, msg: "Inserted Successful" });
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
     demoSchedule: (req, res, next) => {
@@ -42,12 +42,12 @@ exports.website = {
         console.log(sql);
         try {
             db.query(sql, [desc],(err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     res.status(200).json({ error: false, msg: "Inserted Successful" });
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
     countriesData: (req, res, next) => {
@@ -56,11 +56,11 @@ exports.website = {
 
         try {
             db.query(sql,(err, result) => {
-                if(err) { next(ErrorHandler.interServerError(err.message)); }
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     res.status(200).json({ error: false, result: result.rows });
                 }
             });
-        } catch (error) {next(ErrorHandler.interServerError(error));}
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
     }
 }
