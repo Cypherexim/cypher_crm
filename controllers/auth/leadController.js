@@ -121,7 +121,7 @@ exports.lead = {
     fetchInvoiceLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, 
-        pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
+        pan_num, remarks, source, iec_num, last_followup, next_followup, plan_price, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
         followup_tracker, table1.transaction_time, plan_name, source_detail from "crm_masterLeads" as table1 full outer join crm_invoiceleads as table2 
         on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
         
@@ -271,11 +271,11 @@ exports.lead = {
 
 
     insertInvoiceLead: async(req, res, next) => {
-        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num, email } = req.body;
+        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num } = req.body;
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
-            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price, email) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
+            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
             ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, ${performa_num}, $2, $3, 
-            'demo', NOW(), true, '${plan_name}', '${plan_price}', '${email}')`;
+            'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
         const sql2 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
         
         try {
@@ -347,11 +347,10 @@ exports.lead = {
             billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", 
             tax_amt, "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, active, transaction_time, payment_status) values(${leadId}, 
             ${userId}, '${planName}', '${invoiceDate}', '${issuedBy}', $1, $2, '${taxNum}', ${performaNum}, '${reportName}', '${duration}', 
-            '${hsnSac}', ${qty}, '${unit}', $3, $4, '${taxAmt}', ${gstTax?.cgst}, ${gstTax?.sgst}, ${gstTax?.igst}, '${bankData}', true, 
-            NOW(), '${paymentStatus}')`;
-            
+            '${hsnSac}', ${qty}, '${unit}', $3, $4, '${taxAmt}', ${gstTax?.cgst}, ${gstTax?.sgst}, ${gstTax?.igst}, $5, true, NOW(), '${paymentStatus}')`;
+          console.log(sql);
         try {
-            db.query(sql, [shippingAddress, billingAddress, amount[0], amount[1]], (err, result) => {
+            db.query(sql, [shippingAddress, billingAddress, amount[0], amount[1], bankData], async(err, result) => {
                 if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });

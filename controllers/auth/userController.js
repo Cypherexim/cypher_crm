@@ -3,6 +3,7 @@ const db = require("../../config/db");
 const { ErrorHandler } = require("../../error/ErrorHandler");
 const { sendEmailWithInvoice } = require("../../services/mail");
 const { creatPDF } = require("../../services/pdfBuilder");
+const {mailSubjects, taxInvoiceTemplate, emailTemplate} = require("../../utils/mailTemplate");
 
 exports.user = {
     fetchAllUsers: (req, res, next) => {
@@ -20,21 +21,27 @@ exports.user = {
     },
 
     sendInvoiceEmail: async(req, res, next) => {
-        const {userData, isProformaFile} = req.body;
+        const {userData, isProformaFile, hasAttachement} = req.body;
         const publicPath = req.app.locals.publicPath;
-        const fileName = isProformaFile ? "Proforma_Invoice":"Invoice";
         const assetPath = `${req.protocol}://${req.get('host')}/public`;
+        const mailBody = {};
 
-        const mailBody = {
-            to: userData?.email,
-            subject: "Testing email with attachment",
-            html: `<h3>Testing Attachment</h3><br><p>This is the mail testing for attachment file</p>`,
-            filename: `${fileName}.pdf`,
-            filepath: path.join(publicPath, `${fileName}.pdf`)
-        };
+        if(userData?.isEmailSent) {
+            const {name, seller, dataMedium, email} = userData;
+            mailBody["to"] =  email,
+            mailBody["subject"] =  mailSubjects(dataMedium),
+            mailBody["html"] =  dataMedium=="taxInvoice" ? taxInvoiceTemplate(name) : emailTemplate(name, dataMedium, seller)
+            
+            if(hasAttachement) {
+                const fileName = isProformaFile ? "Proforma_Invoice":"Invoice";
+                mailBody["filename"] = `${fileName}.pdf`;
+                mailBody["filepath"] = path.join(publicPath, `${fileName}.pdf`);
+            }
+        }
+
 
         const paths = {filePath: publicPath, assetPath};
-        const fileRes = await creatPDF(fileName, paths);
+        const fileRes = await creatPDF(userData, fileName, paths);
         console.log((((fileRes["filename"]).split("\\")).at(-1)).split(".")[0]);
 
         const mailResponse = await sendEmailWithInvoice(mailBody, fileName);

@@ -28,3 +28,13 @@ exports.setTimeInFormat = (time) => {
     return `${date} ${timing}`;
 }
 
+
+exports.currentGreeting = () => {
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours();
+
+    if (currentHour < 12) return "Morning";
+    else if (currentHour > 12) "Afternoon";
+    else if (currentHour >= 17) "Evening";
+}
+
