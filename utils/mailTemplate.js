@@ -4,13 +4,13 @@ exports.mailSubjects = (subjectType) => {
     const subjects = {
         online: "PROFORMA INVOICE- FOR ONLINE PORTAL",
         offline: "PROFORMA INVOICE FOR OFFLINE REPORTS",
-        taxInvoice: "THIS MESSAGE FOR TAX INVOICES"
+        taxInvoice: "THIS MESSAGE FOR TAX INVOICE"
     };
     return subjects[subjectType];
 }
 
 exports.taxInvoiceTemplate = (clientName) => `
-<div>Dear ${clientName},</div>
+<div style="text-transform:capitalize;">Dear ${clientName},</div>
 <br><br><br>
 <div>Thanks for dealing with us</div>
 <br><br>
@@ -24,16 +24,16 @@ exports.taxInvoiceTemplate = (clientName) => `
 <br>
 `;
 
-exports.emailTemplate = (clientName, mediumType, sellerName) => `
-<div>Dear ${clientName},</div>
+exports.emailTemplate = (clientName, mediumType) => `
+<div style="text-transform:capitalize;">Dear ${clientName},</div>
 <br>
-<div>Good ${currentGreeting} !!!</div>
+<div>Good ${currentGreeting()}!!!</div>
 <br><br>
 <div>Thanks for the dealing with us,</div>
 <br>
 <div>This mail is regarding ${mediumType=="online"?"Online Portal":"offline report"}.</div>
 <br><br>
-<div>As per your discussion with Ms. ${sellerName}, Here I am sending you the Proforma Invoice for the same (please find the attachment) . Kindly do the needful, so we can proceed further.</div>
+<div>As per your discussion with us, Here we are sending you the 'Proforma Invoice' for the same (please find the attachment) . Kindly do the needful, so we can proceed further.</div>
 <br>
 <div>As soon as your Payment will be received in the company account, We will share the tax invoice with you, and ${mediumType=="online" ? "your login details will be released within 1 or 2": "we will send you the reports within 24"} working hours after receiving the payment.</div>
 <div>So request you to be patient with us.</div>

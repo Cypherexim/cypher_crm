@@ -34,7 +34,7 @@ exports.currentGreeting = () => {
     const currentHour = currentTime.getHours();
 
     if (currentHour < 12) return "Morning";
-    else if (currentHour > 12) "Afternoon";
-    else if (currentHour >= 17) "Evening";
+    else if (currentHour >= 12 && currentHour < 17) return "Afternoon";
+    else if (currentHour >= 17) return "Evening";
 }
 

@@ -1,45 +1,62 @@
-const pdf = require("pdf-creator-node");
 const fs = require("fs");
 const path = require("path");
+const pdf = require("pdf-creator-node");
+const converter = require("number-to-words");
 
-exports.creatPDF = async(userData, filename, path) => {
-  const htmlFile = fs.readFileSync(path.join(`${path?.filePath}/invoice_template.html`), "utf8");
+const setNumber = (digit) => {
+  if((`${digit}`).includes(".")) return `${digit}`.split(".")[1].length>1 ? `${digit}%` : `${digit}0%`;
+  else return `${digit}.00%`;
+}
+
+const capitalizeFirstLetter = (value) => {
+  const splittedVal = value.split(" ");
+  return splittedVal.map(item => item.charAt(0).toUpperCase() + item.slice(1)).join(" ");
+}
+
+exports.creatPDF = async(userData, filename, pathObj, hasAttachement) => {
+  const {invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, gstAmt, bankData, clientPhone, clientEmail, clientName, companyName, gstNumber} = userData;
+  const bankDetails = JSON.parse(bankData);
+  const htmlFileName = hasAttachement=="proforma" ? "invoice": hasAttachement=="tax" ? "tax": "taxStamp";
+  const htmlFile = fs.readFileSync(path.join(`${pathObj?.filePath}/${htmlFileName}_template.html`), "utf8");
   const document = {
     html: htmlFile, 
-    path: `${path?.filePath}/${filename}.pdf`,
+    path: `${pathObj?.filePath}/${filename}.pdf`,
     type: "pdf", 
     data: {
       invoiceTitle: filename.includes("Proforma") ? "PROFORMA INVOICE" : "INVOICE",      
-      orderNum: "11488",
-      invoiceNum: "10-Feb-2023",
-      userName: "Mr. Kamal Middha",
-      companyName: "Rocktek infra Service pvt. ltd",
-      shippingAddLine1: "302/23, Gaurav Tower, Pvr Sonia Complex, Vikas Puri, New Delhi-110018",
-      shippingAddLine2: "NEW DELHI, Delhi-110018",
-      billingAddLine1: "302/23, Gaurav Tower, Pvr Sonia Complex, Vikas Puri, New Delhi-110018",
-      billingAddLine2: "NEW DELHI, Delhi-110018",
-      clientGstNum: "07AADCR2313K1ZJ",
-      phoneNum: "9711202504",
-      reportType: "MARKET ANALYSIS REPORT OF 6 MONTHS",
-      duration: "6 Months (Feb-23 to 15th Aug-23)",
-      hsnSac: "998371",
-      quantity: "1",
-      unit: "no.s",
-      amtBeforeTax: "15,000",
-      taxAmt: "9,000",
-      cgst: "9.00%",
-      cgstAmt: "1,350.0",
-      sgst: "9.00%",
-      sgstAmt: "1,350.0",
-      igst: "18.00%",
-      amtAfterTax: "24,000",
-      amtInWords: "Rupees Seventeen Thousand Seven Hundred only",
-      bankName: "ICICI BANK LIMITED",
-      bankBranch: "PARLIAMENT STREET, NEW DELHI-01",
-      bankAccount: "663705600902",
-      bankIfsc: "ICIC0006637",
-      heroLogo: `${path?.assetPath}/Eximine.png`,
-      stampImg: `${path?.assetPath}/stamp1.png`,
+      orderNum: performaNum,
+      invoiceNum: taxNum,
+      issueDate: invoiceDate,
+      userName: clientName,
+      companyName: companyName,
+      shippingAddLine1: address[0]["line1"],
+      shippingAddLine2: address[0]["line2"],
+      billingAddLine1: address[1]["line1"],
+      billingAddLine2: address[1]["line2"],
+      clientGstNum: gstNumber,
+      phoneNum: clientPhone,
+      email: clientEmail,
+      reportType: reportName,
+      duration: duration,
+      hsnSac: hsnSac,
+      quantity: qty,
+      unit: unit,
+      amtBeforeTax: amount[0],
+      taxAmt: taxAmt,
+      cgst: setNumber(gstTax?.cgst),
+      sgst: setNumber(gstTax?.sgst),
+      igst: setNumber(gstTax?.igst),
+      cgstAmt: gstAmt?.cgstAmt,
+      sgstAmt: gstAmt?.sgstAmt,
+      igstAmt: gstAmt?.igstAmt,
+      amtAfterTax: amount[1],
+      amtInWords: capitalizeFirstLetter(converter.toWords(Number(amount[1])).replace(new RegExp("-", "g"), " ").replace(new RegExp(",", "g"), "") + " only"),
+      bankName: bankDetails?.bankName,
+      bankBranch: bankDetails?.branch,
+      bankAccount: bankDetails?.accountNo,
+      bankIfsc: bankDetails?.ifsc,
+      heroLogo: `${pathObj?.assetPath}/Eximine.png`,
+      stampImg: `${pathObj?.assetPath}/stamp1.png`,
     }
   };
   const options = {

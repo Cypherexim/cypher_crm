@@ -12,20 +12,20 @@ const transport = nodemailer.createTransport({
 });
 
 
-exports.sendEmailWithInvoice = (emailBody) => {
+exports.sendEmailWithInvoice = (emailBody, hasAttachement) => {
     return new Promise((resolve, reject) => {
         try {
             const {to, subject, html, filename, filepath} = emailBody;
             const mailOptions = {
                 from: "no-reply@myeximpanel.com",
-                to, subject, html: mailBodyContent(html),
-                attachments: [ { filename, path: filepath } ]
+                to, subject, html: mailBodyContent(html)
             };
+            if(hasAttachement!="none") {mailOptions["attachments"] = [ { filename, path: filepath } ];}
 
             transport.sendMail(mailOptions, async(error, info) => {
                 if (error) {return reject(error);} 
                 else {
-                    fs.unlinkSync(filepath);
+                    if(hasAttachement!="none") { fs.unlinkSync(filepath); }
                     return resolve(true);
                 }
             });
