@@ -15,4 +15,6 @@ router.get("/getAllUsers", user.fetchAllUsers);
 
 router.post("/sendEmail", user.sendInvoiceEmail);
 
+router.post("/sendTaxInvoiceEmail", user.sendTaxInvoiceMail);
+
 module.exports = router;

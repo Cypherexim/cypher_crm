@@ -39,7 +39,7 @@ exports.website = {
         const sql = `insert into "website_scheduleDemo" (schedule_date, schedule_time, user_name, company_name, email,
             phone, description, transaction_time) values('${date}', '${time}', '${name}', '${company}', '${email}', '${phone}', 
             $1, NOW())`;
-        console.log(sql);
+ 
         try {
             db.query(sql, [desc],(err, result) => {
                 if(err) { next(ErrorHandler.internalServerError(err.message)); }

@@ -20,14 +20,13 @@ exports.user = {
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
+    
     sendInvoiceEmail: async (req, res, next) => {
         try {
-            const { userData, isProformaFile, hasAttachement } = req.body;
+            const { userData, hasAttachement } = req.body;
             const publicPath = req.app.locals.publicPath;
             const assetPath = `${req.protocol}://${req.get('host')}/public`;
             const mailBody = {};
-            // console.log(isProformaFile, hasAttachement)
-            
 
             if (userData?.isEmailSent) {
                 const { clientName, dataType, clientEmail } = userData;
@@ -35,8 +34,8 @@ exports.user = {
                 mailBody["subject"] = mailSubjects(dataType);
                 mailBody["html"] = dataType == "taxInvoice" ? taxInvoiceTemplate(clientName) : emailTemplate(clientName, dataType);
 
-                if (hasAttachement!="none") {
-                    const fileName = hasAttachement=="proforma" ? "Proforma_Invoice" : "Invoice";
+                if (hasAttachement != "none") {
+                    const fileName = hasAttachement == "proforma" ? "Proforma_Invoice" : "Invoice";
                     mailBody["filename"] = `${fileName}.pdf`;
                     mailBody["filepath"] = path.join(publicPath, `${fileName}.pdf`);
 
@@ -54,6 +53,35 @@ exports.user = {
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
+
+    sendTaxInvoiceMail: async (req, res, next) => {
+        try {
+            const { userData } = req.body;
+            const { clientName, clientEmail } = userData;            
+            const publicPath = req.app.locals.publicPath;
+            const assetPath = `${req.protocol}://${req.get('host')}/public`;
+            const mailBody = {
+                to: clientEmail,
+                subject: mailSubjects("taxInvoice"),
+                html: taxInvoiceTemplate(clientName),
+                filename: "Invoice.pdf",
+                filepath: path.join(publicPath, "Invoice.pdf"),
+            };
+            
+            //------ file is creating here --------//
+            const paths = { filePath: publicPath, assetPath };
+            const fileRes = await creatPDF(userData, "Invoice", paths, "tax");
+            console.log((((fileRes["filename"]).split("\\")).at(-1)).split(".")[0]);
+            
+
+            const mailResponse = await sendEmailWithInvoice(mailBody, "tax");
+
+            if (mailResponse == true) res.status(200).json({ error: false, msg: "Tax Invoice has been sent!" });
+            else next(ErrorHandler.internalServerError(mailResponse));
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+
     fetchInvoiceNumber: (req, res, next) => {
         const sql = "select * from crm_tracker";
         try {
@@ -64,6 +92,7 @@ exports.user = {
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
+
     updateInvoiceNumber: (req, res, next) => {
         const { column } = req.query;
         const sql = "select * from crm_tracker";
@@ -72,7 +101,7 @@ exports.user = {
                 if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {
                     const currentNum = result.rows[0][column];
-                    const sql2 = `update crm_tracker set ${column}=${currentNum + 1}`;
+                    const sql2 = `update crm_tracker set "${column}"=${currentNum + 1}`;
 
                     db.query(sql2, (err2, result2) => {
                         if (err2) { next(ErrorHandler.internalServerError(err2.message)); }
