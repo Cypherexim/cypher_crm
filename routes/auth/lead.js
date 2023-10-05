@@ -66,4 +66,8 @@ router.post("/updatePartialOpenLead", lead.updateOpenLead);
 
 router.post("/updatePartialAllLead", lead.updateLeadRemark);
 
+router.post("/updateDemoLead", lead.updateDemoLead);
+
+router.post("/updatePriceLead", lead.updatePriceLead);
+
 module.exports = router;

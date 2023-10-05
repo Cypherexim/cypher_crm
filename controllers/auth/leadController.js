@@ -83,7 +83,7 @@ exports.lead = {
     fetchDemoLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, demo_time, company_name, name, designation, department, address, contact, email, location, gst_num,
-        pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, assigned_from as assigend_from_id, 
+        pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, assigned_from as assigned_from_id, 
         lead_tracker, followup_tracker, table1.transaction_time, source_detail from "crm_masterLeads" as table1 full outer join crm_demoleads as table2 on table1.id=table2.leadid 
 		where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
 
@@ -98,7 +98,7 @@ exports.lead = {
 
     fetchPriceLeads: (req, res, next) => {
         const { userId } = req.query;
-        const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num,
+        const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, assigned_from as assigned_from_id,
         pan_num, remarks, source, iec_num, last_followup, next_followup, (select name from crm_users where id=assigned_from) as assigned_from, lead_tracker, 
         followup_tracker, table1.transaction_time, source_detail from "crm_masterLeads" as table1 full outer join crm_priceleads as table2 on table1.id=table2.leadid 
         where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
@@ -235,9 +235,8 @@ exports.lead = {
     insertRejectLead: (req, res, next) => {
         const {leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_rejectleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
-            followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
-            ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`'${assignedFrom}'`}, ${userId}, $2, $3, 
-            'reject', NOW(), true)`;
+            followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
+            ${isNotValue(assignedFrom)?'NULL':`'${assignedFrom}'`}, ${userId}, $2, $3, 'reject', NOW(), true)`;
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
@@ -251,9 +250,8 @@ exports.lead = {
     insertDemoLead: (req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, demoTime } = req.body;
         const sql = `insert into crm_demoleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
-            followup_tracker, current_stage, transaction_time, demo_time, active) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
-            ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 
-            'demo', NOW(), ${isNotValue(demoTime)?'NULL':`'${demoTime}'`}, true)`;
+            followup_tracker, current_stage, transaction_time, demo_time, active) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 'demo', NOW(), '${demoTime}', true)`;
     
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
@@ -267,9 +265,8 @@ exports.lead = {
     insertInvoiceLead: async(req, res, next) => {
         const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num } = req.body;
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
-            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
-            ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, ${performa_num}, $2, $3, 
-            'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
+            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, ${performa_num}, $2, $3, 'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
         const sql2 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
         
         try {
@@ -320,9 +317,8 @@ exports.lead = {
     insertPriceLead: (req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_priceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
-            followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
-            ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 
-            'demo', NOW(), true)`;
+            followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 'demo', NOW(), true)`;
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
@@ -425,7 +421,32 @@ exports.lead = {
        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
+    updateDemoLead: (req, res, next) => {
+        const {id, userId, assignedFrom, demoTime, remark} = req.body;
+        const sql = `update crm_demoleads set remarks=$1, demo_time='${demoTime}', assigned_from=${assignedFrom}, 
+        user_id='${userId}' where id=${id} and active=true`;
 
+        try {
+            db.query(sql, [remark], (err, result) => {
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
+                else {res.status(200).json({error: false, msg: "Update Successful!"});}
+            });
+       } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+    updatePriceLead: (req, res, next) => {
+        const {id, userId, assignedFrom, remark} = req.body;
+        const sql = `update crm_priceleads set remarks=$1, assigned_from=${assignedFrom}, 
+        user_id='${userId}' where id=${id} and active=true`;
+console.log(sql);
+        try {
+            db.query(sql, [remark], (err, result) => {
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
+                else {res.status(200).json({error: false, msg: "Update Successful!"});}
+            });
+       } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+    
     /***************delete**********************/
     deleteOpenLead: (req, res, next) => {
         const {leadId, userId} = req.query;
