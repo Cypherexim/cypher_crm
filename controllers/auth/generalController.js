@@ -15,7 +15,7 @@ exports.general = {
 
     
     fetchSingleCompanyData: (req, res, next) => {
-        const sql = `select id,company_name, name, designation, department, address, contact, email, location, 
+        const sql = `select id, company_name, name, designation, department, address, contact, email, location, 
         gst_num, pan_num, iec_num, source, transaction_time, active, source_detail from "crm_masterLeads" 
         where id=${req.query?.leadId} and active=true`;
 

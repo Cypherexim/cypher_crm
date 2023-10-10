@@ -110,6 +110,18 @@ exports.user = {
                 }
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+    
+    resetInvoiceNumber: (req, res, next) => {
+        const sql = `update crm_tracker set "PI_num"=1, order_num=1 where id=1`;
+
+        try {
+            db.query(sql, (err, result2) => {
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
+                else res.status(200).json({ error: false, msg: "Values are reset" });
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
 };
 

@@ -70,4 +70,6 @@ router.post("/updateDemoLead", lead.updateDemoLead);
 
 router.post("/updatePriceLead", lead.updatePriceLead);
 
+router.post("/updateTaxInvoiceLead", lead.updateTaxInvoiceLead);
+
 module.exports = router;

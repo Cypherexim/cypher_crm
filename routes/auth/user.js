@@ -11,6 +11,8 @@ router.get("/getInvoiceNum", user.fetchInvoiceNumber);
 
 router.get("/updateInvoiceNum", user.updateInvoiceNumber);
 
+router.get("/resetInvoiceNumber", user.resetInvoiceNumber);
+
 router.get("/getAllUsers", user.fetchAllUsers);
 
 router.post("/sendEmail", user.sendInvoiceEmail);

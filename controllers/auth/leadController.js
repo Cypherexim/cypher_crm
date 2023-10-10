@@ -266,7 +266,7 @@ exports.lead = {
         const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num } = req.body;
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
             followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
-            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, ${performa_num}, $2, $3, 'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
         const sql2 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
         
         try {
@@ -330,19 +330,26 @@ exports.lead = {
 
 
     insertTaxInvoiceLead: (req, res, next) => {
-        const {leadId, userId, planName, invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, dataType, isEmailSent, attachment, paymentStatus, issuedBy} = req.body;
+        const {leadId, userId, planName, invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, dataType, isEmailSent, attachment, paymentStatus, issuedBy, clientEmail} = req.body;
         const shippingAddress = `${address[0]?.line1}~${address[0]?.line2}`;
         const billingAddress = `${address[1]?.line1}~${address[1]?.line2}`;
-        const sql = `insert into crm_taxinvoiceleads (leadid, user_id, plan_name, invoice_date, issued_by, shipping_add,
+        const sql = `delete from crm_taxinvoiceleads where leadid=${leadId} and active=true`;
+        const sql2 = `insert into crm_taxinvoiceleads (leadid, user_id, plan_name, invoice_date, issued_by, shipping_add,
             billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", 
             tax_amt, "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, active, transaction_time, payment_status, data_type) values(${leadId}, 
             ${userId}, '${planName}', '${invoiceDate}', '${issuedBy}', $1, $2, '${taxNum}', ${performaNum}, '${reportName}', '${duration}', 
             '${hsnSac}', ${qty}, '${unit}', $3, $4, '${taxAmt}', ${gstTax?.cgst}, ${gstTax?.sgst}, ${gstTax?.igst}, $5, true, NOW(), '${paymentStatus}', '${dataType}')`;
+        
 
         try {
-            db.query(sql, [shippingAddress, billingAddress, amount[0], amount[1], bankData], async(err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                else {res.status(200).json({error: false, msg: "Insert Successful"});}
+            db.query(sql, (error, response) => {
+                if(error) { next(ErrorHandler.internalServerError(error.message)); }
+                else {
+                    db.query(sql2, [shippingAddress, billingAddress, amount[0], amount[1], bankData], async(err, result) => {
+                        if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                        else {res.status(200).json({error: false, msg: "Insert Successful"});}
+                    });
+                }
             });
         } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
@@ -421,6 +428,7 @@ exports.lead = {
        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
+
     updateDemoLead: (req, res, next) => {
         const {id, userId, assignedFrom, demoTime, remark} = req.body;
         const sql = `update crm_demoleads set remarks=$1, demo_time='${demoTime}', assigned_from=${assignedFrom}, 
@@ -434,17 +442,37 @@ exports.lead = {
        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
+
     updatePriceLead: (req, res, next) => {
         const {id, userId, assignedFrom, remark} = req.body;
         const sql = `update crm_priceleads set remarks=$1, assigned_from=${assignedFrom}, 
         user_id='${userId}' where id=${id} and active=true`;
-console.log(sql);
+
         try {
             db.query(sql, [remark], (err, result) => {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Update Successful!"});}
             });
        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+
+    updateTaxInvoiceLead: (req, res, next) => {
+        const {id ,leadId ,invoiceDate ,address ,taxNum ,performaNum ,issuedBy ,reportName ,duration ,hsnSac ,qty ,unit ,amount ,taxAmt ,gstTax ,bankData ,paymentStatus} = req.body;
+        const shippingAddress = `${address[0]["line1"]}~${address[0]["line2"]}`;
+        const billingAddress = `${address[1]["line1"]}~${address[1]["line2"]}`;
+        const {cgst, sgst, igst} = gstTax;
+        const sql = `update crm_taxinvoiceleads set invoice_date='${invoiceDate}', shipping_add='${shippingAddress}', billing_add='${billingAddress}', tax_num='${taxNum}', 
+        performa_num='${performaNum}', report_name='${reportName}', duration='${duration}', "HSN_SAC"='${hsnSac}', quantity='${qty}', unit='${unit}', "amountBeforeTax"='${amount[0]}', 
+        "amountAfterTax"='${amount[1]}', tax_amt='${taxAmt}', "CGST_taxPer"='${cgst}', "SGST_taxPer"='${sgst}', "IGST_taxPer"='${igst}', bank_data='${bankData}', 
+        payment_status='${paymentStatus}', issued_by='${issuedBy}' where id=${id} and active=true`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
+                else {res.status(200).json({error: false, msg: "Update Successful!"});}
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
     
     /***************delete**********************/
