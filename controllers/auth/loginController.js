@@ -4,12 +4,14 @@ const {ErrorHandler} = require("../../error/ErrorHandler");
 
 exports.login = {
     userLogin: (req, res, next) => {
-        const {username, password} = req.body;
+        const {username, password, date, time} = req.body;
         const query = `select * from crm_users where email='${username}' and active=true`;
         const query2 = `select table2.id, name, email, password, role, permission_id, last_login, add_user, edit_user, delete_user, 
         add_lead, edit_lead, has_dashboard, has_admin, has_lead, has_demo, has_pricing, has_invoice, has_chat from "crm_permissions" 
-        as table1 full outer join crm_users as table2 on table1.id=table2.permission_id where password='${password}' and table2.active=true;`
-        const query3 = `update crm_users set last_login=now() where email='${username}' and password='${password}' and active=true`;
+        as table1 full outer join crm_users as table2 on table1.id=table2.permission_id where password='${password}' and table2.active=true`;
+        const query3 = `insert into crm_attendance (email, "Date", login_time, logout_time, transaction_time) 
+        values('${username}', '${date}', '${time}', '', now()) returning id`;
+        // const query3 = `update crm_users set last_login=now() where email='${username}' and password='${password}' and active=true`;
 
         try {
             db.query(query, (err, result) => {
@@ -22,7 +24,11 @@ exports.login = {
                                 if(result2.rows.length>0) {
                                     db.query(query3, (err3, result3) => {
                                         if(err3) { next(ErrorHandler.internalServerError(err3.message)); }
-                                        else res.json({error: false, result: result2.rows});                                        
+                                        else {
+                                            const insertedId = result3.rows[0]["id"];
+                                            result2.rows[0]["loginId"] = insertedId;
+                                            res.json({error: false, result: result2.rows});
+                                        }                                        
                                     });
                                 } else next(ErrorHandler.authenticationError("Password is incorrect!"));
                             }
@@ -33,63 +39,29 @@ exports.login = {
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
-    loginLog: (req, res, next) => {
-        const {id, date} = req.body;
-        const currentTime = new Date();
-        const sql1 = `select id, login_time, logout_time, total_minutes, log_history from "crm_loginLog" 
-        where user_id=${id} and transaction_date=${date}`;
-        const sql2 = `update "crm_loginLog" set login_time=now(), log_history=$1 where user_id=${id}`;
-        const sql3 = `insert into "crm_loginLog" (user_id, login_time, transaction_date, total_minutes, log_history) 
-        values(${id}, now(), '${date}', 0, $1)`;
-
+    userLogout: (req, res, next) => {
+        const {id, email, time} = req.body;
+        const sql1 = `select CAST("Date" as text), login_time from crm_attendance where id=${id}`;
+        
         try {
-            db.query(sql1, (err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+            db.query(sql1, (err1, result1) => {
+                if(err1) { next(ErrorHandler.internalServerError(err1.message)); }
                 else {
-                    if(result.rows.length>0) {
-                        const logHistory = JSON.parse(result.rows[0]["log_history"]);
-                        logHistory.push({
-                            status: "login",
-                            time: setTimeInFormat(currentTime)
-                        });
-                        db.query(sql2, [JSON.stringify(logHistory)], (err2, result2) => {
-                            if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
-                            else {res.json({error: false, msg: "Updated Successfully"});}
-                        });
-                    } else {
-                        const logHistory = [{ status: "login", time: setTimeInFormat(currentTime) }];
-                        
-                        db.query(sql3, [JSON.stringify(logHistory)], (err3, result3) => {
-                            if(err3) { next(ErrorHandler.internalServerError(err3.message)); }
-                            else {res.json({error: false, msg: "Inserted Successfully"});}
-                        });
-                    }
+                    const {Date, login_time} = result1.rows[0];
+                    const totalMinutes = getMinutes(`${Date} ${login_time}`, `${Date} ${time}`);
+                    const sql2 = `update crm_attendance set logout_time='${time}', total_minutes='${totalMinutes}' where id=${id} and email='${email}'`;                    
+
+                    db.query(sql2, (err2, result2) => {
+                        if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
+                        else { res.json({error: false, msg: "Logout Successfully"}); }
+                    });
                 }
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
-    userlogout: (req, res, next) => {
-        const {id, date} = req.body;
-        const sql1 = `select login_time, total_minutes, log_history from "crm_loginLog" where user_id=${id} and transaction_date=${date}`;
-        const sql2 = `update "crm_loginLog" set total_minutes=$1, log_history=$2 where user_id=${id} and transaction_date=${date}`;
-
-        try {
-            db.query(sql1, async(err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                else {
-                    const {total_minutes, log_history, login_time} = result.rows[0];
-                    const logHistory = JSON.parse(log_history);
-                    logHistory.push({ status: "logout", time: setTimeInFormat(currentTime) });
-                    const loginTime = new Date(login_time);
-                    const totalMinutes = total_minutes + (await getMinutes(loginTime));
-                    
-                    db.query(sql2, [totalMinutes, JSON.stringify(logHistory)], (err2, result2) => {
-                        if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
-                        else {res.json({error: false, msg: "Logout Successfully"});}
-                    });
-                }
-            });
-        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    otpLogin: (req, res, next) => {
+        const otpNum = req.query.otp;
+        res.json({error: false, result: Number(otpNum)});
     }
 }; 

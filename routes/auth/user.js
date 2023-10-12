@@ -5,6 +5,8 @@ const {login, registration, user} = require("../../controllers/index");
 
 router.post("/login", login.userLogin);
 
+router.post("/logout", login.userLogout);
+
 router.post("/register", registration.userRegister);
 
 router.get("/getInvoiceNum", user.fetchInvoiceNumber);
@@ -18,5 +20,7 @@ router.get("/getAllUsers", user.fetchAllUsers);
 router.post("/sendEmail", user.sendInvoiceEmail);
 
 router.post("/sendTaxInvoiceEmail", user.sendTaxInvoiceMail);
+
+router.get("/sendOtpPass", login.otpLogin);
 
 module.exports = router;

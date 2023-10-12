@@ -44,7 +44,7 @@ exports.general = {
 
 
     fetchAllEmails: (req, res, next) => {
-        const sql = `select distinct email from "crm_masterLeads" where active=true`;
+        const sql = `select distinct email from "crm_masterLeads" where email<>'' and active=true`;
         
         try {
             db.query(sql, (err, result) => {

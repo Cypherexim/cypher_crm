@@ -10,13 +10,10 @@ exports.tConvert = (time) => {
     return time.join(''); // return adjusted time or original string
 }
 
-exports.getMinutes = (startTime) => {
-    return new Promise((resolve, reject) => {
-        const startTimeInMs = setTimeInFormat(startTime).getTime();
-        const endTimeInMs = setTimeInFormat(new Date()).getTime();
-    
-        resolve((endTimeInMs - startTimeInMs) / 60000);
-    });
+exports.getMinutes = (startTime, endTime) => {
+    const startTimeInMs = new Date(startTime).getTime();
+    const endTimeInMs = new Date(endTime).getTime();
+    return ((endTimeInMs - startTimeInMs) / 60000);
 }
 
 

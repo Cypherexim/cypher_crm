@@ -30,13 +30,10 @@ exports.emailTemplate = (clientName, mediumType) => `
 <div>Good ${currentGreeting()}!!!</div>
 <br><br>
 <div>Thanks for the dealing with us,</div>
-<br>
-<div>This mail is regarding ${mediumType=="online"?"Online Portal":"offline report"}.</div>
 <br><br>
-<div>As per your discussion with us, Here we are sending you the 'Proforma Invoice' for the same (please find the attachment) . Kindly do the needful, so we can proceed further.</div>
+<div>We want to thank you for your ongoing partnership. Your invoice is ready for your review and can be downloaded as a PDF. You also have the option to make a secure online payment.</div>
 <br>
-<div>As soon as your Payment will be received in the company account, We will share the tax invoice with you, and ${mediumType=="online" ? "your login details will be released within 1 or 2": "we will send you the reports within 24"} working hours after receiving the payment.</div>
-<div>So request you to be patient with us.</div>
+<div>We value your business and look forward to serving you further.</div>
 <br><br>
 <div><b>Bank Details:</b></div>
 <div>Eximine Private Limited</div>
@@ -56,6 +53,5 @@ exports.emailTemplate = (clientName, mediumType) => `
 <div><b style="font-size:10pt;">Email Id:-</b> <a href="#" style="font-weight:bold;letter-spacing:0.2px;">accounnts.eximine@gmail.com</a></div>
 <br>
 `;
-
 
 
