@@ -7,10 +7,10 @@ exports.login = {
         const {username, password, date, time} = req.body;
         const query = `select * from crm_users where email='${username}' and active=true`;
         const query2 = `select table2.id, name, email, password, role, permission_id, last_login, add_user, edit_user, delete_user, 
-        add_lead, edit_lead, has_dashboard, has_admin, has_lead, has_demo, has_pricing, has_invoice, has_chat from "crm_permissions" 
+        add_lead, edit_lead, has_dashboard, has_admin, has_lead, has_demo, has_pricing, has_invoice, has_assignment, has_chat from "crm_permissions" 
         as table1 full outer join crm_users as table2 on table1.id=table2.permission_id where password='${password}' and table2.active=true`;
-        const query3 = `insert into crm_attendance (email, "Date", login_time, logout_time, transaction_time) 
-        values('${username}', '${date}', '${time}', '', now()) returning id`;
+        const query3 = `insert into crm_attendance (user_id, email, "Date", login_time, logout_time, transaction_time) 
+        values($1, '${username}', '${date}', '${time}', '', now()) returning id`;
         // const query3 = `update crm_users set last_login=now() where email='${username}' and password='${password}' and active=true`;
 
         try {
@@ -22,7 +22,8 @@ exports.login = {
                             if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
                             else {
                                 if(result2.rows.length>0) {
-                                    db.query(query3, (err3, result3) => {
+                                    const userId = result2.rows[0]["id"]
+                                    db.query(query3, [userId], (err3, result3) => {
                                         if(err3) { next(ErrorHandler.internalServerError(err3.message)); }
                                         else {
                                             const insertedId = result3.rows[0]["id"];

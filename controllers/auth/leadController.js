@@ -196,7 +196,6 @@ exports.lead = {
                     res.status(200).json({ error: false, msg: "Inserted Successful" });                             
                 }
             }
-
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
 
@@ -466,6 +465,18 @@ exports.lead = {
         performa_num='${performaNum}', report_name='${reportName}', duration='${duration}', "HSN_SAC"='${hsnSac}', quantity='${qty}', unit='${unit}', "amountBeforeTax"='${amount[0]}', 
         "amountAfterTax"='${amount[1]}', tax_amt='${taxAmt}', "CGST_taxPer"='${cgst}', "SGST_taxPer"='${sgst}', "IGST_taxPer"='${igst}', bank_data='${bankData}', 
         payment_status='${paymentStatus}', issued_by='${issuedBy}' where id=${id} and active=true`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
+                else {res.status(200).json({error: false, msg: "Update Successful!"});}
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+    
+    updateOpenLeadUser: (req, res, next) => {
+        const {existingUser, assignedUser, selectedLeads} = req.body;
+        const sql = `update crm_openleads set user_id=${assignedUser} where id in (${selectedLeads.toString()}) and user_id=${existingUser}`;
 
         try {
             db.query(sql, (err, result) => {
