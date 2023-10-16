@@ -74,4 +74,6 @@ router.post("/updateTaxInvoiceLead", lead.updateTaxInvoiceLead);
 
 router.post("/updateOpenLeadUser", lead.updateOpenLeadUser);
 
+router.post("/updateInvoideLead", lead.updateInvoiceLead);
+
 module.exports = router;

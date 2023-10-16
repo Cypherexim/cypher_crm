@@ -116,8 +116,8 @@ exports.lead = {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, pan_num, 
         remarks, source, iec_num, last_followup, next_followup, plan_price, assigned_from as assigned_id, (select name from crm_users where id=assigned_from) as assigned_from, 
-        lead_tracker, followup_tracker, table1.transaction_time, plan_name, source_detail from "crm_masterLeads" as table1 full outer join crm_invoiceleads as table2 
-        on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
+        lead_tracker, followup_tracker, table1.transaction_time, plan_name, source_detail, report_type, duration from "crm_masterLeads" 
+        as table1 full outer join crm_invoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
         
         try {
             db.query(sql, (err, result) => {
@@ -262,15 +262,26 @@ exports.lead = {
 
 
     insertInvoiceLead: async(req, res, next) => {
-        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num } = req.body;
+        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num,     assigningFrom, reportType, duration } = req.body;
+
+        //this query is used when moving lead to invoice table
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
             followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
-            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'demo', NOW(), true, '${plan_name}', '${plan_price}')`;
-        const sql2 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'invoice', NOW(), true, '${plan_name}', '${plan_price}')`;
+        
+        //this query is used when new PI is required
+        const sql2 = `insert into crm_invoiceleads (leadid, assigned_from, user_id, performa_num, current_stage, transaction_time, active, plan_price, 
+            report_type, duration) values(${leadId}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', 'invoice', NOW(), 
+            true, '${plan_price}', '${reportType}', '${duration}')`;
+        
+        const sql3 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
+
+        const requiredSql = assigningFrom == "addInvoice" ? sql : sql2;
+        const requiredArr = assigningFrom == "addInvoice" ? [remark, leadTracker, followupTracker] : [];
         
         try {
-            await db.query(sql2);
-            db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
+            await db.query(sql3);
+            db.query(requiredSql, requiredArr, (err, result) => {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });            
@@ -317,7 +328,7 @@ exports.lead = {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_priceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
             followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
-            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 'demo', NOW(), true)`;
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, $2, $3, 'price', NOW(), true)`;
 
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
@@ -456,6 +467,19 @@ exports.lead = {
     },
 
 
+    updateInvoiceLead: (req, res, next) => {
+        const {id, reportType, duration, rate} = req.body;
+        const sql = `update crm_invoiceleads set plan_price='${rate}', report_type='${reportType}', duration='${duration}' where id=${id} and active=true`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) {next(ErrorHandler.internalServerError(err.message));}
+                else {res.status(200).json({error: false, msg: "Update Successful"});}
+            });
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
+    },
+
+
     updateTaxInvoiceLead: (req, res, next) => {
         const {id ,leadId ,invoiceDate ,address ,taxNum ,performaNum ,issuedBy ,reportName ,duration ,hsnSac ,qty ,unit ,amount ,taxAmt ,gstTax ,bankData ,paymentStatus} = req.body;
         const shippingAddress = `${address[0]["line1"]}~${address[0]["line2"]}`;
@@ -474,6 +498,7 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
     
+
     updateOpenLeadUser: (req, res, next) => {
         const {existingUser, assignedUser, selectedLeads} = req.body;
         const sql = `update crm_openleads set user_id=${assignedUser} where id in (${selectedLeads.toString()}) and user_id=${existingUser}`;
