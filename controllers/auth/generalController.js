@@ -44,12 +44,21 @@ exports.general = {
 
 
     fetchAllEmails: (req, res, next) => {
-        const sql = `select distinct lower(trim(email)) as email from "crm_masterLeads" where not lower(email) in ('', ' ', 'n a', 'n/a', 'na') and active=true`;
+        const sql1 = `select distinct lower(trim(email)) as email from "crm_masterLeads" where not lower(email) in ('', ' ', 'n a', 'n/a', 'na') and active=true`;
+        const sql2 = `select distinct lower(trim(company_name)) as company from "crm_masterLeads" where active=true`;
         
         try {
-            db.query(sql, (err, result) => {
+            db.query(sql1, (err, result) => {
                 if (err) { next(ErrorHandler.internalServerError(err.message)); }
-                else { res.status(200).json({ error: false, result: result.rows }); }
+                else {
+                    db.query(sql2, (err2, result2) => {
+                        if (err2) { next(ErrorHandler.internalServerError(err2.message)); }
+                        else { 
+                            const listObj = { emails: result.rows, companies: result2.rows };
+                            res.status(200).json({ error: false, result: listObj }); 
+                        }
+                    });
+                }
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
