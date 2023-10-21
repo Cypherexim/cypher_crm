@@ -116,8 +116,8 @@ exports.lead = {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, pan_num, 
         remarks, source, iec_num, last_followup, next_followup, plan_price, assigned_from as assigned_id, (select name from crm_users where id=assigned_from) as assigned_from, 
-        lead_tracker, followup_tracker, table1.transaction_time, plan_name, source_detail, report_type, duration from "crm_masterLeads" 
-        as table1 full outer join crm_invoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
+        lead_tracker, followup_tracker, table1.transaction_time, payment_status, plan_name, source_detail, report_type, duration from "crm_masterLeads" as table1
+        full outer join crm_invoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
         
         try {
             db.query(sql, (err, result) => {
@@ -266,13 +266,13 @@ exports.lead = {
 
         //this query is used when moving lead to invoice table
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
-            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
-            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'invoice', NOW(), true, '${plan_name}', '${plan_price}')`;
+            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price, ) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
+            ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'invoice', NOW(), true, '${plan_name}', '${plan_price}', 'pending')`;
         
         //this query is used when new PI is required
         const sql2 = `insert into crm_invoiceleads (leadid, assigned_from, user_id, performa_num, current_stage, transaction_time, active, plan_price, 
-            report_type, duration) values(${leadId}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', 'invoice', NOW(), 
-            true, '${plan_price}', '${reportType}', '${duration}')`;
+            report_type, duration, payment_status) values(${leadId}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', 'invoice', NOW(), 
+            true, '${plan_price}', '${reportType}', '${duration}', 'pending')`;
         
         const sql3 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
 
@@ -468,8 +468,9 @@ exports.lead = {
 
 
     updateInvoiceLead: (req, res, next) => {
-        const {id, reportType, duration, rate} = req.body;
-        const sql = `update crm_invoiceleads set plan_price='${rate}', report_type='${reportType}', duration='${duration}' where id=${id} and active=true`;
+        const {id, reportType, duration, rate, paymentStatus} = req.body;
+        const sql = `update crm_invoiceleads set plan_price='${rate}', report_type='${reportType}', duration='${duration}', 
+        payment_status='${paymentStatus}' where id=${id} and active=true`;
 
         try {
             db.query(sql, (err, result) => {
