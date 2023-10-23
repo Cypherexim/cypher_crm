@@ -68,7 +68,7 @@ exports.lead = {
 
     fetchStatusLead: (req, res, next) => {
         const {userId} = req.query;
-        const sql = `select id, lead_data, assigners, status, transaction_time, active, email 
+        const sql = `select id, lead_data, assigners, status, transaction_time, active, email, updated_remark, leadid 
         from crm_statusleads where ${userId}=any(assigners) and active=true`;
         
         try {
@@ -200,7 +200,7 @@ exports.lead = {
     },
 
     
-    revertOpenLead:(req, res, next) => {
+    revertOpenLead: (req, res, next) => {
         const { leadId, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom } = req.body;
         const sql = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
             followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
@@ -291,12 +291,13 @@ exports.lead = {
 
     insertStatusLead: (req, res, next) => {
         const {leadData, assigner, status} = req.body;
-        const {email} = JSON.parse(leadData);
-        const sql1 = `select * from crm_statusleads where email='${email}' and active=true`;
-        const sql2 = `insert into crm_statusleads (lead_data, assigners, status, transaction_time, email, active)
-            values($1, $2, '${status}', now(), $3, true)`;
-        const sql3 = `update crm_statusleads set lead_data=$1, assigners=$2, status='${status}', transaction_time=NOW() 
-            where email=$3 and active=true`;
+        const {email, leadId, remark} = JSON.parse(leadData);
+        // const sql1 = `select * from crm_statusleads where email='${email}' and active=true`;
+        const sql1 = `select * from crm_statusleads where leadid='${leadId}' and active=true`;
+        const sql2 = `insert into crm_statusleads (lead_data, assigners, status, transaction_time, email, leadid, 
+            updated_remark, active) values($1, $2, '${status}', now(), $3, ${leadId}, $4, true)`;
+        const sql3 = `update crm_statusleads set lead_data=$1, assigners=$2, email=$3, updated_mark=$4, status='${status}', 
+            transaction_time=NOW() where leadid=${leadId} and active=true`;
 
         try {
             db.query(sql1, (err, result) => {
@@ -307,13 +308,13 @@ exports.lead = {
 
                         if(!assignerArr.includes(assigner)) assignerArr.push(assigner);
 
-                        db.query(sql3, [leadData, assignerArr, email], (err2, result2) => {
+                        db.query(sql3, [leadData, assignerArr, email, remark], (err2, result2) => {
                             if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                             else {res.status(200).json({error: false, msg: "Update Successful"});}
                         });
                     } else {
                         const assignerArr = [ assigner ];
-                        db.query(sql2, [leadData, assignerArr, email], (err2, result2) => {
+                        db.query(sql2, [leadData, assignerArr, email, remark], (err2, result2) => {
                             if(err2) {next(ErrorHandler.internalServerError(err2.message));}
                             else {res.status(200).json({error: false, msg: "Insert Successful"});}
                         });
@@ -512,6 +513,20 @@ exports.lead = {
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
     
+
+    updateStatusRemark: (req, res, next) => {
+        const {remark, leadId} = req.body;
+        const sql = `update crm_statusleads set updated_remark='${remark}' where leadid=${leadId}`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else {res.status(200).json({error: false, msg: "Update Successful"});}
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+
     /***************delete**********************/
     deleteOpenLead: (req, res, next) => {
         const {leadId, userId} = req.query;
