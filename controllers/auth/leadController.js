@@ -296,7 +296,7 @@ exports.lead = {
         const sql1 = `select * from crm_statusleads where leadid='${leadId}' and active=true`;
         const sql2 = `insert into crm_statusleads (lead_data, assigners, status, transaction_time, email, leadid, 
             updated_remark, active) values($1, $2, '${status}', now(), $3, ${leadId}, $4, true)`;
-        const sql3 = `update crm_statusleads set lead_data=$1, assigners=$2, email=$3, updated_mark=$4, status='${status}', 
+        const sql3 = `update crm_statusleads set lead_data=$1, assigners=$2, email=$3, updated_remark=$4, status='${status}', 
             transaction_time=NOW() where leadid=${leadId} and active=true`;
 
         try {
@@ -306,7 +306,8 @@ exports.lead = {
                     if(result.rows.length>0) {
                         const assignerArr = (result.rows[0]["assigners"]);
 
-                        if(!assignerArr.includes(assigner)) assignerArr.push(assigner);
+                        if(assignerArr.includes(assigner)) assignerArr.splice(assignerArr.indexOf(assigner), 1);
+                        assignerArr.push(assigner);
 
                         db.query(sql3, [leadData, assignerArr, email, remark], (err2, result2) => {
                             if(err2) {next(ErrorHandler.internalServerError(err2.message));}
@@ -515,11 +516,11 @@ exports.lead = {
     
 
     updateStatusRemark: (req, res, next) => {
-        const {remark, leadId} = req.body;
-        const sql = `update crm_statusleads set updated_remark='${remark}' where leadid=${leadId}`;
+        const {remark, leadId, email, status} = req.body;
+        const sql = `update crm_statusleads set updated_remark=$1, email=$2, status='${status}' where leadid=${leadId}`;
 
         try {
-            db.query(sql, (err, result) => {
+            db.query(sql, [remark, email], (err, result) => {
                 if(err) { next(ErrorHandler.internalServerError(err.message)); }
                 else {res.status(200).json({error: false, msg: "Update Successful"});}
             });
