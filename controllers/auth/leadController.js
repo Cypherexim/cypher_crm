@@ -266,7 +266,7 @@ exports.lead = {
 
         //this query is used when moving lead to invoice table
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
-            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price, ) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
+            followup_tracker, current_stage, transaction_time, active, plan_name, plan_price, payment_status) values(${leadId}, $1, '${lastFollow}', '${nextFollow}', 
             ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'invoice', NOW(), true, '${plan_name}', '${plan_price}', 'pending')`;
         
         //this query is used when new PI is required

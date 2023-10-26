@@ -23,4 +23,6 @@ router.post("/sendTaxInvoiceEmail", user.sendTaxInvoiceMail);
 
 router.get("/sendOtpPass", login.otpLogin);
 
+router.post("/getUserAttendance", user.getUserAttendanceList);
+
 module.exports = router;

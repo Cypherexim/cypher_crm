@@ -122,6 +122,21 @@ exports.user = {
                 else res.status(200).json({ error: false, msg: "Values are reset" });
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+
+    getUserAttendanceList: (req, res, next) => {
+        const {userId, from, to} = req.body;
+        const sql = `select id, email, (select name from crm_users where id=user_id) as "name", "Date", 
+        login_time, logout_time, total_minutes, transaction_time from crm_attendance where "Date">='${from}' 
+        and "Date"<='${to}' and user_id=${userId}`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
+                else res.status(200).json({ error: false, result: result.rows });
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
 };
 

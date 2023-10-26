@@ -8,7 +8,8 @@
     "start": "nodemon server.js",
     "forever": "forever start server.js --minUptime=2000ms --spinSleepTime=5000ms",
     "list": "forever list",
-    "stop": "forever stopall"
+    "stop": "forever stopall",
+    "lt": "lt --port 8001"
   },
   "author": "eximine",
   "license": "ISC",
@@ -22,6 +23,7 @@
     "pg": "^8.11.1"
   },
   "devDependencies": {
+    "ngrok": "^5.0.0-beta.2",
     "nodemon": "^2.0.22"
   }
 }
