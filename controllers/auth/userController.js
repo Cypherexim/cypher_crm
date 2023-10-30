@@ -127,9 +127,10 @@ exports.user = {
 
     getUserAttendanceList: (req, res, next) => {
         const {userId, from, to} = req.body;
+        const sqlPart = userId!="all" ? `and user_id=${userId}`: "";
         const sql = `select id, email, (select name from crm_users where id=user_id) as "name", "Date", 
         login_time, logout_time, total_minutes, transaction_time from crm_attendance where "Date">='${from}' 
-        and "Date"<='${to}' and user_id=${userId}`;
+        and "Date"<='${to}' ${sqlPart} order by transaction_time`;
 
         try {
             db.query(sql, (err, result) => {

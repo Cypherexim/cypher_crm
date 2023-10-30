@@ -206,7 +206,7 @@ exports.lead = {
             followup_tracker, current_stage, transaction_time, active) values(${leadId}, $1, ${isNotValue(lastFollow)?'NULL':`'${lastFollow}'`}, 
             ${isNotValue(nextFollow)?'NULL':`'${nextFollow}'`}, ${isNotValue(assignedFrom)?'NULL':`'${assignedFrom}'`}, ${userId}, $2, $3, 
             'open', NOW(), true)`;
-
+    
         try {
             db.query(sql, [remark, leadTracker, followupTracker], (err, result) => {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
@@ -304,6 +304,7 @@ exports.lead = {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {
                     if(result.rows.length>0) {
+                        console.log(sql3, leadId, remark)
                         const assignerArr = (result.rows[0]["assigners"]);
 
                         if(assignerArr.includes(assigner)) assignerArr.splice(assignerArr.indexOf(assigner), 1);
@@ -390,7 +391,7 @@ exports.lead = {
 
 
     updateStatusLead: (req, res, next) => {
-        const sql = `update crm_statusleads set status='process', transaction_time=NOW() where email='${req.body.email}' and active=true`;
+        const sql = `update crm_statusleads set status='process', transaction_time=NOW() where leadid='${req.body.leadid}' and active=true`;
 
         try {
             db.query(sql, (err, result) => {
