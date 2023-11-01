@@ -148,6 +148,22 @@ exports.lead = {
     },
 
 
+    fetchUserWiseLeads: (req, res, next) => {
+        const {statusType, userId, dateFrom, dateTo} = req.body;
+        const sql = `select table2.id, leadid, user_id, remarks, company_name, name, designation, department, address, contact, email, location, gst_num,
+        pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, current_stage, followup_tracker, table1.transaction_time, user_id, 
+        source_detail from "crm_masterLeads" as table1 full outer join crm_${statusType}leads as table2 on table1.id=table2.leadid where table2.transaction_time>='${dateFrom}' 
+        and table2.transaction_time<='${dateTo}' and table2.user_id=${userId} and table2.active=true order by table1.transaction_time desc`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else {res.status(200).json({error: false, result: result.rows});}
+            });
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
+    },
+
+
     /***************Inserting**********************/
     insertOpenLead: (req, res, next) => {
         const { username, company, designation, department, remark, address, location, email, contact, gst, pan, iec, userId, leadTracker, followupTracker, lastFollow, nextFollow, assignedFrom, source, reference } = req.body;

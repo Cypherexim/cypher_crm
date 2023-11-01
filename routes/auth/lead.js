@@ -80,4 +80,6 @@ router.post("/updateStatusRemark", lead.updateStatusRemark);
 
 router.post("/addCloseLead", lead.insertCloseLead);
 
+router.post("/getUserAllLeads", lead.fetchUserWiseLeads);
+
 module.exports = router;
