@@ -72,7 +72,7 @@ exports.lead = {
     fetchStatusLead: (req, res, next) => {
         const {userId} = req.query;
         const sql = `select id, lead_data, assigners, status, transaction_time, active, email, updated_remark, leadid 
-        from crm_statusleads where ${userId}=any(assigners) and active=true`;
+        from crm_statusleads where ${userId}=any(assigners) and active=true order by transaction_time desc`;
         
         try {
             db.query(sql, (err, result) => {
@@ -149,11 +149,10 @@ exports.lead = {
 
 
     fetchUserWiseLeads: (req, res, next) => {
-        const {statusType, userId, dateFrom, dateTo} = req.body;
-        const sql = `select table2.id, leadid, user_id, remarks, company_name, name, designation, department, address, contact, email, location, gst_num,
-        pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, current_stage, followup_tracker, table1.transaction_time, user_id, 
-        source_detail from "crm_masterLeads" as table1 full outer join crm_${statusType}leads as table2 on table1.id=table2.leadid where table2.transaction_time>='${dateFrom}' 
-        and table2.transaction_time<='${dateTo}' and table2.user_id=${userId} and table2.active=true order by table1.transaction_time desc`;
+        const sql = `select table2.id, leadid, user_id, (select "name" from crm_users where id=user_id) as user_name, remarks, company_name, "name", designation, 
+        department, address, contact, email, location, gst_num, pan_num, source, iec_num, last_followup, next_followup, assigned_from, lead_tracker, current_stage, 
+        followup_tracker, table1.transaction_time, user_id, table2.transaction_time as "closingTime", source_detail from "crm_masterLeads" as table1 full outer join 
+        crm_openleads as table2 on table1.id=table2.leadid where table2.active=true order by table1.transaction_time desc`;
 
         try {
             db.query(sql, (err, result) => {
@@ -239,7 +238,6 @@ exports.lead = {
         const {leadId, userId, invoiceId} = req.body;
         const sql = `select id, lead_data, assigners, updated_remark from crm_statusleads where leadid=${leadId}`;
         const sql5 = `update crm_taxinvoiceleads set is_closed=true where id=${invoiceId} and active=true`;
-        
         try {
             db.query(sql, async(err, result) => {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
@@ -249,11 +247,11 @@ exports.lead = {
                         const {lastFollow, nextFollow, leadTracker, followupTracker} = JSON.parse(lead_data);
                         const sql2 = `insert into crm_closeleads (leadid, remarks, last_followup, next_followup, user_id, 
                         current_stage, transaction_time, lead_tracker, followup_tracker, active) values(${leadId}, $1, 
-                        '${lastFollow}', '${nextFollow}', $2, 'close', now(), '${leadTracker}', '${followupTracker}', true)`;                                
+                        '${lastFollow}', '${nextFollow}', $2, 'close', now(), $3, $4, true)`;                                
                         const sql3 = `update crm_statusleads set active=false where id=${id}`;
 
                         const assignersLen = assigners.length;
-                        for(let i=0; i<assignersLen; i++) { await db.query(sql2, [updated_remark, assigners[i]]); }                        
+                        for(let i=0; i<assignersLen; i++) { await db.query(sql2, [updated_remark, assigners[i], leadTracker, followupTracker]); }                        
 
                         db.query(sql3, async(err2, result2) => {
                             if(err2) {next(ErrorHandler.internalServerError(err2.message));}

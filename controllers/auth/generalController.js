@@ -61,5 +61,31 @@ exports.general = {
                 }
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+
+    fetchAllRoles: (req, res, next) => {
+        const sql = `select id, name, permission_id from crm_roles where active=true`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { res.status(200).json({ error: false, result: result.rows }); }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+
+    fetchRolePermission: (req, res, next) => {
+        const roleId = req.query.id;
+        const sql = `select add_user, edit_user, delete_user, add_lead, edit_lead, has_dashboard, has_admin, has_lead, has_demo, has_pricing, has_invoice,
+        has_chat, has_assignment from crm_permissions where id=${roleId} and active=true`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { res.status(200).json({ error: false, result: result.rows }); }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
 }

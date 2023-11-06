@@ -25,4 +25,6 @@ router.get("/sendOtpPass", login.otpLogin);
 
 router.post("/getUserAttendance", user.getUserAttendanceList);
 
+router.post("/addNewCrmUser", registration.userRegister);
+
 module.exports = router;

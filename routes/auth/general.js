@@ -10,4 +10,8 @@ router.get("/getEmailExistanceResponse", general.fetchEmailExistance);
 
 router.get("/getAllEmailsList", general.fetchAllEmails);
 
+router.get("/getAllUserRoles", general.fetchAllRoles);
+
+router.get("/getRolePermission", general.fetchRolePermission);
+
 module.exports = router;

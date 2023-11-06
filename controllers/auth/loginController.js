@@ -11,7 +11,6 @@ exports.login = {
         as table1 full outer join crm_users as table2 on table1.id=table2.permission_id where password='${password}' and table2.active=true`;
         const query3 = `insert into crm_attendance (user_id, email, "Date", login_time, logout_time, transaction_time) 
         values($1, '${username}', '${date}', '${time}', '', now()) returning id`;
-        // const query3 = `update crm_users set last_login=now() where email='${username}' and password='${password}' and active=true`;
 
         try {
             db.query(query, (err, result) => {
