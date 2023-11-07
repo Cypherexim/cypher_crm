@@ -27,4 +27,6 @@ router.post("/getUserAttendance", user.getUserAttendanceList);
 
 router.post("/addNewCrmUser", registration.userRegister);
 
+router.post("/addCustomPermission", registration.insertCustomPermission);
+
 module.exports = router;

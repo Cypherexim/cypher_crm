@@ -3,14 +3,34 @@ const { ErrorHandler } = require("../../error/ErrorHandler");
 
 exports.registration = {
     userRegister: (req, res, next) => {
-        const {} = req.body;
+        const {userName, userEmail, userPhone, password, roleId, permissionId} = req.body;
+        
         const sql = `insert into crm_users(name, email, contact, password, role, permission_id, 
-        created_on, active) values('', '', '', '', '', , , true)`;
+        created_on, active) values('${userName}', '${userEmail}', '${userPhone}', '${password}', 
+        '${roleId}', ${permissionId}, now(), true)`;
 
         try {
             db.query(sql, (err, result) => {
                 if (err) { next(ErrorHandler.internalServerError(err.message)); }
                 else { res.status(200).json({error: false, msg: "Insert Successfull"}); }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+        
+
+    insertCustomPermission: (req, res, next) => {
+        const {AddUser, EditUser, DeleteUser, AddLead, EditLead, Dashboard, AdminPanel, LeadPanel, DemoPanel, PricePanel, InvoicePanel, GroupChat, LeadAssignment, userEmail} = req.body;
+        const commentDesc = `Custom permission for user ${userEmail}`;
+        const sql = `insert into crm_permissions (add_user, edit_user, delete_user, add_lead, edit_lead, has_dashboard, 
+        has_admin, has_lead, has_demo, has_pricing, has_invoice, has_chat, has_assignment, transaction_time, active,
+        comment) values(${AddUser}, ${EditUser}, ${DeleteUser}, ${AddLead}, ${EditLead}, ${Dashboard}, ${AdminPanel}, 
+        ${LeadPanel}, ${DemoPanel}, ${PricePanel}, ${InvoicePanel}, ${GroupChat}, ${LeadAssignment}, now(), true, 
+        '${commentDesc}') returning id`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { res.status(200).json({error: false, result: result.rows}); }
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
