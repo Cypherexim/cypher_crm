@@ -82,4 +82,6 @@ router.post("/addCloseLead", lead.insertCloseLead);
 
 router.get("/getUserAllLeads", lead.fetchUserWiseLeads);
 
+router.post("/fetchDatewiseInvoiceLeads", lead.fetchInvoiceDatewiseLeads);
+
 module.exports = router;

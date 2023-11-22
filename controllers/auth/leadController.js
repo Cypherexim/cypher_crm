@@ -119,7 +119,7 @@ exports.lead = {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, pan_num, 
         remarks, source, iec_num, last_followup, next_followup, plan_price, assigned_from as assigned_id, (select name from crm_users where id=assigned_from) as assigned_from, 
-        lead_tracker, followup_tracker, table1.transaction_time, payment_status, plan_name, source_detail, report_type, duration from "crm_masterLeads" as table1
+        lead_tracker, followup_tracker, table2.transaction_time, payment_status, plan_name, source_detail, report_type, duration from "crm_masterLeads" as table1
         full outer join crm_invoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
         
         try {
@@ -136,7 +136,7 @@ exports.lead = {
         const sql = `select table2.id, leadid, user_id, plan_name, issued_by, (select name from crm_users where id=table2.issued_by) as issued_name, 
         company_name, name, designation, department, address, contact, email, location, gst_num, pan_num, source, iec_num, plan_name, invoice_date, 
         shipping_add, billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", tax_amt, 
-        "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, is_closed, table1.transaction_time from "crm_masterLeads" as table1 full outer join 
+        "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, is_closed, table2.transaction_time from "crm_masterLeads" as table1 full outer join 
         crm_taxinvoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
 
         try {
@@ -162,6 +162,30 @@ exports.lead = {
         } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
+
+    fetchInvoiceDatewiseLeads: (req, res, next) => {
+        const {from, to, userId, invoiceType} = req.body;
+        const sql = invoiceType=="invoice"
+        ? `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, pan_num, 
+        remarks, source, iec_num, last_followup, next_followup, plan_price, assigned_from as assigned_id, (select name from crm_users where id=assigned_from) as assigned_from, 
+        lead_tracker, followup_tracker, table1.transaction_time, payment_status, plan_name, source_detail, report_type, duration from "crm_masterLeads" as table1
+        full outer join crm_invoiceleads as table2 on table1.id=table2.leadid where table2.transaction_time>='${from}' and table2.transaction_time<='${to}' and 
+        table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`
+        
+        : `select table2.id, leadid, user_id, plan_name, issued_by, (select name from crm_users where id=table2.issued_by) as issued_name, 
+        company_name, name, designation, department, address, contact, email, location, gst_num, pan_num, source, iec_num, plan_name, invoice_date, 
+        shipping_add, billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", tax_amt, 
+        "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, is_closed, table2.transaction_time from "crm_masterLeads" as table1 full outer join 
+        crm_taxinvoiceleads as table2 on table1.id=table2.leadid where table2.transaction_time>='${from}' and table2.transaction_time<='${to}' and 
+        table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
+
+        try {
+            db.query(sql, (err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else {res.status(200).json({error: false, result: result.rows});}
+            });
+        } catch (error) {next(ErrorHandler.internalServerError(error));}
+    },
 
     /***************Inserting**********************/
     insertOpenLead: (req, res, next) => {
@@ -241,7 +265,7 @@ exports.lead = {
         try {
             db.query(sql, async(err, result) => {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
-                else {                    
+                else {
                     if(result.rows.length>0) {
                         const {id, lead_data, assigners, updated_remark} = result.rows[0];
                         const {lastFollow, nextFollow, leadTracker, followupTracker} = JSON.parse(lead_data);
@@ -251,7 +275,9 @@ exports.lead = {
                         const sql3 = `update crm_statusleads set active=false where id=${id}`;
 
                         const assignersLen = assigners.length;
-                        for(let i=0; i<assignersLen; i++) { await db.query(sql2, [updated_remark, assigners[i], leadTracker, followupTracker]); }                        
+                        for(let i=0; i<assignersLen; i++) {
+                            await db.query(sql2, [updated_remark, assigners[i], leadTracker, followupTracker]);
+                        }
 
                         db.query(sql3, async(err2, result2) => {
                             if(err2) {next(ErrorHandler.internalServerError(err2.message));}
@@ -565,15 +591,24 @@ exports.lead = {
     },
     
 
-    updateOpenLeadUser: (req, res, next) => {
-        const {existingUser, assignedUser, selectedLeads} = req.body;
-        const sql = `update crm_openleads set user_id=${assignedUser} where id in (${selectedLeads.toString()}) and user_id=${existingUser}`;
+    updateOpenLeadUser: async(req, res, next) => {
+        const {existingUser, assignedUser, selectedLeads, assignedLeadData} = req.body;
+        const newTrackerData = { date: assignedLeadData?.date, remark: `Lead assigned by ${assignedLeadData?.name}` };
 
         try {
-            db.query(sql, (err, result) => {
-                if(err) {next(ErrorHandler.internalServerError(err.message));}
-                else {res.status(200).json({error: false, msg: "Update Successful!"});}
-            });
+            const leadsLen = selectedLeads.length;
+            for(let i=0; i<leadsLen; i++) {                                
+                const sql = `update crm_openleads set user_id=${assignedUser}, followup_tracker=$1 where id=${selectedLeads[i]["id"]} and user_id=${existingUser}`;
+                const followupTracker = selectedLeads[i]["tracker"];
+                followupTracker.unshift(newTrackerData);
+                
+                db.query(sql, [JSON.stringify(followupTracker)], (err, result) => {
+                    if(err) {next(ErrorHandler.internalServerError(err.message));}
+                    else {
+                        if(i==leadsLen-1) {res.status(200).json({error: false, msg: "Update Successful!"});}                    
+                    }
+                });
+            }
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
     },
     
