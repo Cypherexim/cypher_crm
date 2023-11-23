@@ -274,10 +274,14 @@ exports.lead = {
                         '${lastFollow}', '${nextFollow}', $2, 'close', now(), $3, $4, true)`;                                
                         const sql3 = `update crm_statusleads set active=false where id=${id}`;
 
-                        const assignersLen = assigners.length;
-                        for(let i=0; i<assignersLen; i++) {
-                            await db.query(sql2, [updated_remark, assigners[i], leadTracker, followupTracker]);
-                        }
+                        // const assignersLen = assigners.length;
+                        // for(let i=0; i<assignersLen; i++) {
+                        //     await db.query(sql2, [updated_remark, assigners[i], leadTracker, followupTracker]);
+                        // }
+
+                        await assigners.forEach(async(id) => {
+                            await db.query(sql2, [updated_remark, id, leadTracker, followupTracker]);
+                        });
 
                         db.query(sql3, async(err2, result2) => {
                             if(err2) {next(ErrorHandler.internalServerError(err2.message));}
