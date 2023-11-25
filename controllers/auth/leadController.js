@@ -118,7 +118,7 @@ exports.lead = {
     fetchInvoiceLeads: (req, res, next) => {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, company_name, name, designation, department, address, contact, email, location, gst_num, performa_num, pan_num, 
-        remarks, source, iec_num, last_followup, next_followup, plan_price, assigned_from as assigned_id, (select name from crm_users where id=assigned_from) as assigned_from, 
+        remarks, source, iec_num, last_followup, next_followup, discount, plan_price, assigned_from as assigned_id, (select name from crm_users where id=assigned_from) as assigned_from, 
         lead_tracker, followup_tracker, table2.transaction_time, payment_status, plan_name, source_detail, report_type, duration from "crm_masterLeads" as table1
         full outer join crm_invoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
         
@@ -135,7 +135,7 @@ exports.lead = {
         const { userId } = req.query;
         const sql = `select table2.id, leadid, user_id, plan_name, issued_by, (select name from crm_users where id=table2.issued_by) as issued_name, 
         company_name, name, designation, department, address, contact, email, location, gst_num, pan_num, source, iec_num, plan_name, invoice_date, 
-        shipping_add, billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", tax_amt, 
+        shipping_add, billing_add, tax_num, performa_num, discount, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", tax_amt, 
         "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, payment_status, is_closed, table2.transaction_time from "crm_masterLeads" as table1 full outer join 
         crm_taxinvoiceleads as table2 on table1.id=table2.leadid where table2.user_id=${userId} and table2.active=true order by table2.transaction_time desc`;
 
@@ -221,17 +221,17 @@ exports.lead = {
 
         try {
             for(let i=0; i<excelRecords.length; i++) {
-                const { username, company, designation, department, source, address, location, email, contact, gst, pan, iec, userId } = excelRecords[i];
+                const { username, company, designation, department, source, address, location, email, lastFollow, contact, gst, pan, iec, userId } = excelRecords[i];
                 const sql = `insert into "crm_masterLeads" (company_name, name, designation, department, address,
                     contact, email, location, gst_num, pan_num, iec_num, source, transaction_time, active) 
                     values ('${company}', '${username}', '${designation}', '${department}', $1, '${contact}', 
                     '${email}', '${location}', '${gst}', '${pan}', '${iec}', $2, NOW(), true) returning id`;
                 const sql2 = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
-                    followup_tracker, current_stage, transaction_time, active) values($1, '', NULL, NULL, NULL, ${userId}, '', '', 'open', NOW(), true)`;                 
+                    followup_tracker, current_stage, transaction_time, active) values($1, '', $2, NULL, NULL, ${userId}, '', '', 'open', NOW(), true)`;                 
 
                 const result = await db.query(sql, [address, source]); //masterLead insertion
                 const insertedId = result.rows[0]["id"];
-                await db.query(sql2, [insertedId]);//openlead insertion
+                await db.query(sql2, [insertedId, lastFollow]);//openlead insertion
                 console.log("Inserted!");
 
                 if(i+1 == excelRecords.length) {
@@ -354,7 +354,7 @@ exports.lead = {
 
 
     insertInvoiceLead: async(req, res, next) => {
-        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num,     assigningFrom, reportType, duration } = req.body;
+        const { leadId, gst, lastFollow, nextFollow, remark, userId, leadTracker, followupTracker, assignedFrom, plan_name, plan_price, performa_num, discount, assigningFrom, reportType, duration } = req.body;
 
         //this query is used when moving lead to invoice table
         const sql = `insert into crm_invoiceleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, performa_num, lead_tracker,  
@@ -362,8 +362,8 @@ exports.lead = {
             ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', $2, $3, 'invoice', NOW(), true, '${plan_name}', '${plan_price}', 'pending')`;
         
         //this query is used when new PI is required
-        const sql2 = `insert into crm_invoiceleads (leadid, assigned_from, user_id, performa_num, current_stage, transaction_time, active, plan_price, 
-            report_type, duration, payment_status) values(${leadId}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', 'invoice', NOW(), 
+        const sql2 = `insert into crm_invoiceleads (leadid, discount, assigned_from, user_id, performa_num, current_stage, transaction_time, active, plan_price, 
+            report_type, duration, payment_status) values(${leadId}, ${discount}, ${isNotValue(assignedFrom)?'NULL':`${assignedFrom}`}, ${userId}, '${performa_num}', 'invoice', NOW(), 
             true, '${plan_price}', '${reportType}', '${duration}', 'pending')`;
         
         const sql3 = `update "crm_masterLeads" set gst_num='${gst}' where id=${leadId}`;
@@ -435,15 +435,15 @@ exports.lead = {
 
 
     insertTaxInvoiceLead: (req, res, next) => {
-        const {leadId, userId, planName, invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, dataType, isEmailSent, attachment, paymentStatus, issuedBy, clientEmail} = req.body;
+        const {leadId, userId, planName, invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, dataType, discount, isEmailSent, attachment, paymentStatus, issuedBy, clientEmail} = req.body;
         const shippingAddress = `${address[0]?.line1}~${address[0]?.line2}`;
         const billingAddress = `${address[1]?.line1}~${address[1]?.line2}`;
         const sql = `delete from crm_taxinvoiceleads where leadid=${leadId} and active=true`;
         const sql2 = `insert into crm_taxinvoiceleads (leadid, user_id, plan_name, invoice_date, issued_by, shipping_add,
             billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", 
-            tax_amt, "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, active, transaction_time, payment_status, data_type) values(${leadId}, 
+            tax_amt, "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, active, transaction_time, payment_status, data_type, discount) values(${leadId}, 
             ${userId}, '${planName}', '${invoiceDate}', '${issuedBy}', $1, $2, '${taxNum}', ${performaNum}, '${reportName}', '${duration}', 
-            '${hsnSac}', ${qty}, '${unit}', $3, $4, '${taxAmt}', ${gstTax?.cgst}, ${gstTax?.sgst}, ${gstTax?.igst}, $5, true, NOW(), '${paymentStatus}', '${dataType}')`;
+            '${hsnSac}', ${qty}, '${unit}', $3, $4, '${taxAmt}', ${gstTax?.cgst}, ${gstTax?.sgst}, ${gstTax?.igst}, $5, true, NOW(), '${paymentStatus}', '${dataType}', ${discount})`;
         
 
         try {
@@ -563,8 +563,8 @@ exports.lead = {
 
 
     updateInvoiceLead: (req, res, next) => {
-        const {id, reportType, duration, rate, paymentStatus} = req.body;
-        const sql = `update crm_invoiceleads set plan_price='${rate}', report_type='${reportType}', duration='${duration}', 
+        const {id, reportType, duration, rate, discount, paymentStatus} = req.body;
+        const sql = `update crm_invoiceleads set plan_price='${rate}', discount=${discount}, report_type='${reportType}', duration='${duration}', 
         payment_status='${paymentStatus}' where id=${id} and active=true`;
 
         try {
@@ -577,14 +577,14 @@ exports.lead = {
 
 
     updateTaxInvoiceLead: (req, res, next) => {
-        const {id ,leadId ,invoiceDate ,address ,taxNum ,performaNum ,issuedBy ,reportName ,duration ,hsnSac ,qty ,unit ,amount ,taxAmt ,gstTax ,bankData ,paymentStatus} = req.body;
+        const {id, leadId, invoiceDate, address, taxNum, performaNum, issuedBy, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, paymentStatus, discount} = req.body;
         const shippingAddress = `${address[0]["line1"]}~${address[0]["line2"]}`;
         const billingAddress = `${address[1]["line1"]}~${address[1]["line2"]}`;
         const {cgst, sgst, igst} = gstTax;
         const sql = `update crm_taxinvoiceleads set invoice_date='${invoiceDate}', shipping_add='${shippingAddress}', billing_add='${billingAddress}', tax_num='${taxNum}', 
         performa_num='${performaNum}', report_name='${reportName}', duration='${duration}', "HSN_SAC"='${hsnSac}', quantity='${qty}', unit='${unit}', "amountBeforeTax"='${amount[0]}', 
         "amountAfterTax"='${amount[1]}', tax_amt='${taxAmt}', "CGST_taxPer"='${cgst}', "SGST_taxPer"='${sgst}', "IGST_taxPer"='${igst}', bank_data='${bankData}', 
-        payment_status='${paymentStatus}', issued_by='${issuedBy}' where id=${id} and active=true`;
+        payment_status='${paymentStatus}', issued_by='${issuedBy}', discount=${discount} where id=${id} and active=true`;
 
         try {
             db.query(sql, (err, result) => {
