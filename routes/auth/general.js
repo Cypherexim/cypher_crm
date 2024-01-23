@@ -14,4 +14,6 @@ router.get("/getAllUserRoles", general.fetchAllRoles);
 
 router.get("/getRolePermission", general.fetchRolePermission);
 
+router.get("/getInvoiceReports", general.getInvoiceReports);
+
 module.exports = router;

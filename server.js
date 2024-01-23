@@ -2,11 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const http = require("http");
+const socketIO = require("socket.io");
 const path = require("path");
-// const ngrok = require('ngrok');
-// (async function() {
-//   const url = await ngrok.connect(process.env.SERVER_PORT);
-// })();
+const server = http.createServer(app);
+const io = socketIO(server);
+const socketEvents = require("./socket/chatEvents");
+socketEvents(io); //start socket services
 
 const PORT = process.env.PORT || process.env.SERVER_PORT;
 
@@ -23,7 +25,7 @@ app.use("/public", express.static("public"));
 app.use(express.static(__dirname+'/public'));
 
 
-app.get("/", (req, res) => res.send("<h2>Welcome to Cypher CRM</h2>"));
+app.get("/", (req, res) => res.send("<h2>Welcome to Cypher CRM v2.1</h2>"));
 
 app.use("/api", generalRoute);
 app.use("/api/user", userRoute);
@@ -40,7 +42,8 @@ app.use((err, req, res, next) => {
     res.status(err.status||500).json({error: true, msg: err.msg});
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log("Server is running on port:", PORT);
     console.log("click here: http://localhost:"+PORT);
 });
+
