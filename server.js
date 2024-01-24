@@ -5,10 +5,10 @@ const app = express();
 const http = require("http");
 const socketIO = require("socket.io");
 const path = require("path");
-const server = http.createServer(app);
-const io = socketIO(server);
-const socketEvents = require("./socket/chatEvents");
-socketEvents(io); //start socket services
+// const server = http.createServer(app);
+// const io = socketIO(server);
+// const socketEvents = require("./socket/chatEvents");
+// socketEvents(io); //start socket services
 
 const PORT = process.env.PORT || process.env.SERVER_PORT;
 
@@ -42,7 +42,7 @@ app.use((err, req, res, next) => {
     res.status(err.status||500).json({error: true, msg: err.msg});
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log("Server is running on port:", PORT);
     console.log("click here: http://localhost:"+PORT);
 });
