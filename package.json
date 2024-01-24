@@ -20,8 +20,7 @@
     "nodemailer": "^6.9.4",
     "number-to-words": "^1.2.4",
     "pdf-creator-node": "^2.3.5",
-    "pg": "^8.11.1",
-    "socket.io": "^4.7.3"
+    "pg": "^8.11.1"
   },
   "devDependencies": {
     "ngrok": "^5.0.0-beta.2",

@@ -19,10 +19,10 @@ exports.website = {
     },
 
     checkoutPackage: (req, res, next) => {
-        const {name, country, company, email, phone, source, planName, msg} = req.body;
-        const sql = `insert into website_checkout (name, company_name, email, phone, country, source, plan_name, 
-            transaction_time, requirement) values('${name}', '${company}', '${email}', '${phone}', '${country}', 
-            '${source}', '${planName}', NOW(), '${msg}')`;
+        const {name, country, company, email, phone, source, planName} = req.body;
+        const sql = `insert into website_checkout (name, company_name, email, phone, country, 
+            source, plan_name, transaction_time) values('${name}', '${company}', '${email}', '${phone}', 
+            '${country}', '${source}', '${planName}', NOW())`;
 
         try {
             db.query(sql, (err, result) => {
@@ -60,49 +60,6 @@ exports.website = {
                 else {
                     res.status(200).json({ error: false, result: result.rows });
                 }
-            });
-        } catch (error) {next(ErrorHandler.internalServerError(error));}
-    },
-
-
-
-    ///////////////////////// EXCEL APIS ///////////////////////////
-    getAllCommodities: (req, res, next) => {
-        const sql = "select hscode2dig, industry_classification from excel_commoditydesc";
-        try {
-            db.query(sql,(err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                else { res.status(200).json({ error: false, result: result.rows }); }
-            });
-        } catch (error) { next(ErrorHandler.internalServerError(error)); }
-    },
-
-    getAllPorts: (req, res, next) => {
-        const sql = "select port_code, mode_of_port, port from excel_portinfo";
-        try {
-            db.query(sql,(err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                else { res.status(200).json({ error: false, result: result.rows }); }
-            });
-        } catch (error) {next(ErrorHandler.internalServerError(error));}
-    },
-
-    getAllCompanies: (req, res, next) => {
-        const sql = "select companyname, iec, phone, e_mail, contactperson, address, city, pin from excel_importerinfo";
-        try {
-            db.query(sql,(err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                else { res.status(200).json({ error: false, result: result.rows }); }
-            });
-        } catch (error) {next(ErrorHandler.internalServerError(error));}
-    },
-
-    getAllExchangeRate: (req, res, next) => {
-        const sql = "select date, imp_exchange_rate, exp_exchange_rate from excel_exchange_rate";
-        try {
-            db.query(sql,(err, result) => {
-                if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                else { res.status(200).json({ error: false, result: result.rows }); }
             });
         } catch (error) {next(ErrorHandler.internalServerError(error));}
     }

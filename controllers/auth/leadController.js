@@ -218,7 +218,7 @@ exports.lead = {
     insertExcelOpenLeads: async(req, res, next) => {
         const { excelJson } = req.body;
         const excelRecords = JSON.parse(excelJson);
-        
+
         try {
             for(let i=0; i<excelRecords.length; i++) {
                 const { username, company, designation, department, source, address, location, email, lastFollow, contact, gst, pan, iec, userId } = excelRecords[i];
