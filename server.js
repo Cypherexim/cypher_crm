@@ -2,12 +2,12 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const http = require("http");
-const socketIO = require("socket.io");
+// const http = require("http");
+// const socketIO = require("socket.io");
 const path = require("path");
-const server = http.createServer(app);
-const io = socketIO(server);
-const socketEvents = require("./socket/chatEvents");
+// const server = http.createServer(app);
+// const io = socketIO(server);
+// const socketEvents = require("./socket/chatEvents");
 // socketEvents(io); //start socket services
 
 const PORT = process.env.PORT || process.env.SERVER_PORT;
