@@ -7,14 +7,14 @@ module.exports = (io) => {
       
         // Handle events from the client
         socket.on("group-message", (data) => {
-          console.log('Message received from client:', data);
+          // console.log('Message received from client:', data);
           // Broadcast the message to all connected clients
           io.emit("group-message", data);
         });
 
         //send only single user message
         socket.on("single-user-msg", (data) => {
-          console.log(data)
+          // console.log(data)
           io.emit("single-user-msg", data);
         });
 

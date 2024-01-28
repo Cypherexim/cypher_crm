@@ -87,5 +87,16 @@ exports.general = {
                 else { res.status(200).json({ error: false, result: result.rows }); }
             });
         } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+    getInvoiceReports: (req, res, next) => {
+        const sql = `select report_name from "crm_invoiceReport" where active=true order by report_name;`;
+        
+        try {
+            db.query(sql, (err, result) => {
+                if (err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { res.status(200).json({ error: false, result: result.rows }); }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
     }
 }
