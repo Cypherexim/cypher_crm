@@ -78,7 +78,7 @@ exports.website = {
     },
 
     getAllPorts: (req, res, next) => {
-        const sql = "select port_code, mode_of_port, port from excel_portinfo";
+        const sql = "select other_port, mode_of_port, cush, location from excel_portinfo";
         try {
             db.query(sql,(err, result) => {
                 if(err) { next(ErrorHandler.internalServerError(err.message)); }
