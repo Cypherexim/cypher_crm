@@ -2,18 +2,18 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const http = require("http");
-const socketIO = require("socket.io");
+// const http = require("http");
+// const socketIO = require("socket.io");
 const path = require("path");
 const PORT = process.env.PORT || process.env.SERVER_PORT;
 
 app.use(cors());
 
-const server = http.createServer(app);
-const io = socketIO(server);
+// const server = http.createServer(app);
+// const io = socketIO(server);
 
-const socketEvents = require("./socket/chatEvents");
-socketEvents(io); //start socket services
+// const socketEvents = require("./socket/chatEvents");
+// socketEvents(io); //start socket services
 
 
 const {userRoute, leadRoute, siteRoute, generalRoute} = require("./routes/index");
@@ -44,7 +44,7 @@ app.use((err, req, res, next) => {
     res.status(err.status||500).json({error: true, msg: err.msg});
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log("Server is running on port:", PORT);
     console.log("click here: http://localhost:"+PORT);
 });
