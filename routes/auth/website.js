@@ -8,6 +8,12 @@ router.post("/buy_package", website.checkoutPackage);
 
 router.post("/add_demo", website.demoSchedule);
 
+router.get("/get_schedule_demos", website.fetchDemoScheduleData);
+
+router.post("/insertScheduleDemoToOpen", website.insertInToOpenSchedule);
+
+router.post("/updateScheduleDemoStatus", website.updateScheduleDemoStatus);
+
 router.get("/continent_countries", website.countriesData);
 
 //////////////////////////////--Excel--//////////////////////////////

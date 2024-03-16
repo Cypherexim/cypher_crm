@@ -5,7 +5,6 @@ class ErrorHandler {
     }
     
     static internalServerError(msg = "Internal Server Error!") {
-        console.log('errorhandler.js ==>',msg)
         return new ErrorHandler(500, msg);
     }
 

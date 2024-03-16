@@ -193,15 +193,17 @@ exports.lead = {
 
         const sql1 = `insert into "crm_masterLeads" (company_name, name, designation, department, address,
             contact, email, location, gst_num, pan_num, iec_num, source, transaction_time, source_detail, active) 
-            values ('${company}', '${username}', '${designation}', '${department}', '${address}', '${contact}', 
-            '${email}', '${location}', '${gst}', '${pan}', '${iec}', '${source}', NOW(), $1, true) returning id`;
+            values ($1, $2, $3, $4, $5, $6, $7, $8, '${gst}', '${pan}', '${iec}', $9, NOW(), $10, true) returning id`;
+        const sourceDetail = source=="reference" ? JSON.stringify(reference) : "";
+        const sql1Arr = [company, username, designation, department, address, contact, email, location, source, sourceDetail];
+        
         const sql2 = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
             followup_tracker, current_stage, transaction_time, active) values($1, $2, '${lastFollow}', '${nextFollow}', 
             ${isNotValue(assignedFrom)?'NULL':`'${assignedFrom}'`}, ${userId}, $3, $4, 'open', NOW(), true)`;
 
         try {
-            const sourceDetail = source=="reference" ? JSON.stringify(reference) : "";
-            db.query(sql1, [sourceDetail], (err, result) => {
+            
+            db.query(sql1, sql1Arr, (err, result) => {
                 if(err) {next(ErrorHandler.internalServerError(err.message));}
                 else {
                     const insertedId = result.rows[0]["id"];
@@ -438,7 +440,7 @@ exports.lead = {
         const {leadId, userId, planName, invoiceDate, address, taxNum, performaNum, reportName, duration, hsnSac, qty, unit, amount, taxAmt, gstTax, bankData, dataType, discount, isEmailSent, attachment, paymentStatus, issuedBy, clientEmail} = req.body;
         const shippingAddress = `${address[0]?.line1}~${address[0]?.line2}`;
         const billingAddress = `${address[1]?.line1}~${address[1]?.line2}`;
-        const sql = `delete from crm_taxinvoiceleads where leadid=${leadId} and active=true`;
+        // const sql = `delete from crm_taxinvoiceleads where leadid=${leadId} and active=true`;
         const sql2 = `insert into crm_taxinvoiceleads (leadid, user_id, plan_name, invoice_date, issued_by, shipping_add,
             billing_add, tax_num, performa_num, report_name, duration, "HSN_SAC", quantity, unit, "amountBeforeTax", "amountAfterTax", 
             tax_amt, "CGST_taxPer", "SGST_taxPer", "IGST_taxPer", bank_data, active, transaction_time, payment_status, data_type, discount) values(${leadId}, 
@@ -447,15 +449,19 @@ exports.lead = {
         
 
         try {
-            db.query(sql, (error, response) => {
-                if(error) { next(ErrorHandler.internalServerError(error.message)); }
-                else {
-                    db.query(sql2, [shippingAddress, billingAddress, amount[0], amount[1], bankData], async(err, result) => {
-                        if(err) { next(ErrorHandler.internalServerError(err.message)); }
-                        else {res.status(200).json({error: false, msg: "Insert Successful"});}
-                    });
-                }
+            db.query(sql2, [shippingAddress, billingAddress, amount[0], amount[1], bankData], async(err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else {res.status(200).json({error: false, msg: "Insert Successful"});}
             });
+            // db.query(sql, (error, response) => {
+            //     if(error) { next(ErrorHandler.internalServerError(error.message)); }
+            //     else {
+            //         db.query(sql2, [shippingAddress, billingAddress, amount[0], amount[1], bankData], async(err, result) => {
+            //             if(err) { next(ErrorHandler.internalServerError(err.message)); }
+            //             else {res.status(200).json({error: false, msg: "Insert Successful"});}
+            //         });
+            //     }
+            // });
         } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
@@ -732,7 +738,8 @@ exports.lead = {
 
     deleteInvoiceLead: (req, res, next) => {
         const {leadId, userId} = req.query;
-        const sql = `delete from crm_invoiceleads where leadid=${leadId} and user_id=${userId}`;
+        // const sql = `delete from crm_invoiceleads where leadid=${leadId} and user_id=${userId}`;
+        const sql = `update crm_invoiceleads set active=false where leadid=${leadId} and user_id=${userId}`;
 
         try {
             db.query(sql, (err, result) => {
@@ -745,7 +752,8 @@ exports.lead = {
 
     deleteTaxInvoiceLead: (req, res, next) => {
         const {leadId, userId} = req.query;
-        const sql = `delete from crm_taxinvoiceleads where id=${leadId} and user_id=${userId}`;
+        // const sql = `delete from crm_taxinvoiceleads where id=${leadId} and user_id=${userId}`;
+        const sql = `update crm_taxinvoiceleads set active=false where id=${leadId} and user_id=${userId}`;
 
         try {
             db.query(sql, (err, result) => {

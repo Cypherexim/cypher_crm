@@ -35,10 +35,10 @@ exports.website = {
     },
 
     demoSchedule: (req, res, next) => {
-        const {time, date, name, company, email, phone, desc} = req.body;
+        const {time, date, name, company, email, phone, desc, source} = req.body;
         const sql = `insert into "website_scheduleDemo" (schedule_date, schedule_time, user_name, company_name, email,
-            phone, description, transaction_time) values('${date}', '${time}', '${name}', '${company}', '${email}', '${phone}', 
-            $1, NOW())`;
+            phone, description, transaction_time, source) values('${date}', '${time}', '${name}', '${company}', '${email}', '${phone}', 
+            $1, NOW(), '${source}')`;
  
         try {
             db.query(sql, [desc],(err, result) => {
@@ -64,7 +64,70 @@ exports.website = {
         } catch (error) {next(ErrorHandler.internalServerError(error));}
     },
 
+    fetchDemoScheduleData: (req, res, next) => {
+        const sql = `select "id", schedule_date, schedule_time, user_name, company_name, email, phone, description, 
+        "source", transaction_time, is_assigned from "website_scheduleDemo" order by schedule_date desc`;
+        try {
+            db.query(sql,(err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { res.status(200).json({ error: false, result: result.rows }); }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
 
+    insertInToOpenSchedule: (req, res, next) => {
+        const {selectedLeads, existingUser, assignedUser, assignedLeadData} = req.body;
+        const sql1 = `select user_name, company_name, email, phone, description from "website_scheduleDemo" 
+        where id in (${selectedLeads.toString()}) and is_assigned=false`;
+        
+        try {
+            db.query(sql1,(err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { 
+                    const leadList = result.rows;
+                    const len = leadList.length;
+                    
+                    for(let i=0; i<len; i++) {
+                        const {user_name, company_name, email, phone, description} = leadList[i];
+                        const sql2 = `insert into "crm_masterLeads" (company_name, name, designation, department, address,
+                            contact, email, location, gst_num, pan_num, iec_num, source, transaction_time, source_detail, active) 
+                            values ($1, $2, '', '', '', $3, $4, '', '', '', '', '', NOW(), 'website', true) returning id`;
+                        const sql3 = `insert into crm_openleads (leadid, remarks, last_followup, next_followup, assigned_from, user_id, lead_tracker, 
+                            followup_tracker, current_stage, transaction_time, active) values ($1, $2, $3, '', $4, $5, '', $6, 'open', NOW(), true)`;
+
+                        db.query(sql2, [company_name, user_name, phone, email], (err2, result2) => {
+                            if(err2) { next(ErrorHandler.internalServerError(err2.message)); }
+                            else {
+                                const insertedId = result2.rows[0]["id"];
+                                const remark = `User's Remark: ${description}`;
+                                const newTrackerData = [{ date: assignedLeadData?.date, remark: `Lead assigned by ${assignedLeadData?.name} of Website` }];
+                                const sqlParams = [insertedId, remark, assignedLeadData?.date, existingUser, assignedUser, JSON.stringify(newTrackerData)];
+
+                                db.query(sql3, sqlParams, (err3, result3) => {
+                                    if(err3) { next(ErrorHandler.internalServerError(err3.message)); }
+                                    else {
+                                        if(i == len-1) {res.status(200).json({ error: false, msg: "Inserted Successful" });}
+                                    }
+                                });                        
+                            }
+                        });
+                    }
+                }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
+
+    updateScheduleDemoStatus: (req, res, next) => {
+        const {selectedLeads} = req.body;
+        const sql = `update "website_scheduleDemo" set is_assigned=true where id in (${selectedLeads.toString()}) and is_assigned=false`;
+
+        try {
+            db.query(sql,(err, result) => {
+                if(err) { next(ErrorHandler.internalServerError(err.message)); }
+                else { res.status(200).json({ error: false, msg: "Updated Successful" }); }
+            });
+        } catch (error) { next(ErrorHandler.internalServerError(error)); }
+    },
 
     ///////////////////////// EXCEL APIS ///////////////////////////
     getAllCommodities: (req, res, next) => {
