@@ -29,4 +29,6 @@ router.post("/addNewCrmUser", registration.userRegister);
 
 router.post("/addCustomPermission", registration.insertCustomPermission);
 
+router.post("/addAdminOptionPermission", registration.insertAdminPermission)
+
 module.exports = router;

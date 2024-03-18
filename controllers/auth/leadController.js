@@ -739,7 +739,7 @@ exports.lead = {
     deleteInvoiceLead: (req, res, next) => {
         const {leadId, userId} = req.query;
         // const sql = `delete from crm_invoiceleads where leadid=${leadId} and user_id=${userId}`;
-        const sql = `update crm_invoiceleads set active=false where leadid=${leadId} and user_id=${userId}`;
+        const sql = `update crm_invoiceleads set active=false where id=${leadId} and user_id=${userId}`;
 
         try {
             db.query(sql, (err, result) => {
